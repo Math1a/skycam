@@ -1,0 +1,6 @@
+[submodule "matlab-process"]
+	path = matlab-process
+	url = https://github.com/farhi/matlab-process.git
+[submodule "matlab-gphoto"]
+	path = matlab-gphoto
+	url = https://gitlab.com/astrophotography/matlab-gphoto.git
