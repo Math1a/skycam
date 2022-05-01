@@ -1,6 +1,8 @@
 # skycam
 
----
+skycam is a tool for using DSLR cameras or astronomical cameras in order to survey the night sky
+
+# DSLR Camera Matlab use:
 
 ### Dependencies:
 
@@ -12,7 +14,10 @@ Matlab dependencies: [matlab-gphoto](https://gitlab.com/astrophotography/matlab-
 
 #### Auto installation:
 
-Place the installation file in the desired install directory and run it, it will create a "skycam" directory, and place the matlab dependencies there.
+Clone this repository to the desired location, then run "install.sh" to install the dependencies.
+```bash
+sudo bash install.sh
+```
 
 ---
 
