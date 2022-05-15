@@ -7,7 +7,8 @@
 
 % Get the sun's position
 sun = celestial.SolarSys.get_sun;
-sunalt = rad2deg(sun.Alt);
+%sunalt = rad2deg(sun.Alt);
+sunalt = -10;
 
 c = inst.QHYccd; % Maybe specify a port?
 % Initate connection
@@ -20,15 +21,24 @@ pause(5)
 
 % In case you don't want the image on screen:
 % c.classCommand('Display= []');
+% Turn off the cooling fan
+c.coolingOff
 
 % Infinite loop that will take pictures at night, every minute
-while true % Maybe add a way to interrupt loop?
-    if sunalt < -5
-        disp("Taking an image...   " + datestr(now))
-        c.takeExposure(10) % TODO: exposure time?
+while sunalt < -5 % Maybe add a way to interrupt loop?
+    tic()
+    disp("Taking an image...   " + datestr(now))
+    c.takeExposure(10) % TODO: exposure time?
+    wait = toc();
+    pause (60 - wait)
+    
+    disp("Temperature: " + c.Temperature)
+    if c.Temperature >= 35
+        c.disconnect
+        error("Temperature too high!")
     end
-    pause (60)
     
     sun = celestial.SolarSys.get_sun;
-    sunalt = rad2deg(sun.Alt);
+    %sunalt = rad2deg(sun.Alt);
+    sunalt = sunalt + 1;
 end
