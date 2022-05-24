@@ -53,10 +53,10 @@ disp("Setting exposure time to closest available value:")
 p.set('bulb', 0)
 p.set('shutterspeed', idx-1)
 
-plot(p);
-pause(5)
-
 loop = 0;
+trylater = [];
+period(p, string(delay));
+continuous(p, 'on');
 while sunalt < -5 % Maybe add a way to break?
     % This part of the loop will only activate at night (when the sun is 5
     % deg. below the horizon)
@@ -71,20 +71,25 @@ while sunalt < -5 % Maybe add a way to break?
                 datestr(now, dateformat) + ".nef");
         end
         filenum = length(dir('capt*'));
-        p.capture; % Capture an image
         % Wait untill the camera is idle again, and the new image is saved
         while length(dir('capt*')) <= filenum; end
         
         % Rename newly captured image to match date and time
         % Unknown errors can occur, in that case, try again
         waittime = toc; % Get the time it took to capture the image
+        if ~isempty(trylater)
+            try
+                movefile(trylater(1),trylater(2))
+            catch
+                warning(trylater(1) + " could not be renamed to " + trylater(2))
+            end
+            trylater = [];
+        end
         try
             filename = projectdir + "SkyImage_" +  datestr(now - (waittime/86400), dateformat) + ".nef";
             movefile(string(lastImageFile), filename)
         catch err
-            pause(1)
-            filename = projectdir + "SkyImage_" +  datestr(now - (waittime/86400), dateformat) + ".nef";
-            movefile(string(lastImageFile), filename)
+            trylater = [string(lastImageFile), filename];
         end
         disp("New image " + filename + " saved successfully!")
         disp("Elapsed time: " + string(waittime) +" seconds")
@@ -92,8 +97,8 @@ while sunalt < -5 % Maybe add a way to break?
             S.flush
             resp = S.readline;
             disp("Temperature: " + string(resp))
-            loop = loop + 1;
         end
+        loop = loop + 1;
     end
     if waittime < delay
         pause(delay - waittime)

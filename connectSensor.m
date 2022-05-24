@@ -33,5 +33,7 @@ else
     found = 1;
 end
 
-S.flush
-resp = S.readline;
+if found
+    S.flush
+    resp = S.readline;
+end
