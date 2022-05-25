@@ -53,6 +53,8 @@ disp("Setting exposure time to closest available value:")
 p.set('bulb', 0)
 p.set('shutterspeed', idx-1)
 
+p.preview
+
 loop = 0;
 trylater = [];
 period(p, string(delay));
