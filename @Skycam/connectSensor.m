@@ -33,5 +33,7 @@ else
     F.found = 1;
 end
 
-F.TemperatureLogger.flush
-F.InitialTemp = F.TemperatureLogger.readline;
+if F.found
+    F.TemperatureLogger.flush
+    F.InitialTemp = F.TemperatureLogger.readline;
+end

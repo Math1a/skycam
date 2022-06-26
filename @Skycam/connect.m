@@ -1,5 +1,9 @@
 function F = connect(F,Port)
 
+cd(F.ImagePath);
+addpath('/home/ocs/matlab/skycam/')
+addpath('/home/ocs/')
+
 F.connectSensor
 if F.found
     disp("Temperature data logger detected!")
@@ -26,4 +30,17 @@ data = importdata("exptimes.txt");
 F.gp.set('bulb', 0)
 F.gp.set('shutterspeed', idx-1)
 
+if ~exist('delay','var') || isempty(delay)
+    delay = F.Delay;
 end
+
+F.gp.plot
+
+pause(2)
+
+period(F.gp, string(delay));
+continuous(F.gp, 'on');
+
+cd("~/");
+pid = process('bash /home/ocs/matlab/skycam/checkfiles.sh');
+F.filecheck = pid;

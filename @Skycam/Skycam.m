@@ -13,6 +13,7 @@ classdef Skycam < handle % obs.LAST_Handle
     
     properties(Hidden)
         gp % The gphoto serial resource
+        filecheck % The bash script pid that checks for new files
         TemperatureLogger % The temperature logger serial resource
         InitialTemp
         found = 0
@@ -52,10 +53,6 @@ classdef Skycam < handle % obs.LAST_Handle
                 data = importdata("exptimes.txt");
                 % Check what is the closest one
                 [val,idx] = min(abs(data-ExpTime));
-                % Change the camera settings to match the closest one
-                F.gp.set('bulb', 0)
-                F.gp.set('shutterspeed', idx-1)
-               
                 % Set the class' value, this is merely an indicator
                 F.ExpTime = ExpTime;
             end
