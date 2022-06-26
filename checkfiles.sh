@@ -20,7 +20,6 @@ fi
 LOOP=0
 while true; do
     IMFILE="capt$(printf %04d $LOOP).nef"
-
     # Wait until new file is found
     until test -f "$IMFILE"; do
 	sleep 0.1
