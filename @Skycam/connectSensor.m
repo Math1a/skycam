@@ -1,10 +1,11 @@
-function F = connectSensor(F,Port,Baud)
 %This script is to connect the Arduino data logger (if it exists)
 %Optional parameters:
 %'Port' - The port where the Arduino is connected, auto detect by deafult.
 %Example input: "/dev/ttyUSB0"
 %'Baud' - The baud rate (bits per second) of the communication, deafult is
 %9600.
+
+function F = connectSensor(F,Port,Baud)
 
 F.found = 0;
 

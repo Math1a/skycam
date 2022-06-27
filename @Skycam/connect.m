@@ -1,9 +1,17 @@
+% The connect function is used to initiate the connection with the DSLR
+% camera, as well as to check and connect the Arduino temperature sensor.
+% When connectong, the camera will start the continuous capture.
+
 function F = connect(F,Port)
 
+% Gphoto will save the images to the current directory, so we change it to
+% the desired image path:
+wd = pwd; % Save the current directory (to return later)
 cd(F.ImagePath);
 addpath('/home/ocs/matlab/skycam/')
 addpath('/home/ocs/')
 
+% Try to connect the temperature sensor and log its temperatures
 F.connectSensor
 if F.found
     disp("Temperature data logger detected!")
@@ -12,6 +20,8 @@ else
     disp("No temperature data logger detected. Temperature will not be monitored")
 end
 
+% Initiate the gphoto process, gphoto automatically detects the port if
+% none is given
 if ~exist('Port','var') || isempty(Port)
     F.gp = gphoto;
 else
@@ -19,28 +29,36 @@ else
 end
 
 pause(5)
+% Check successful connection
 if string(F.gp.status) == "IDLE" || string(F.gp.status) == "BUSY"
     fprintf("\nCamera connected successfully!\n\n")
 else
     error("Could not find camera! Check connection")
 end
 
-data = importdata("exptimes.txt");
-[val,idx] = min(abs(data-F.ExpTime));
-F.gp.set('bulb', 0)
-F.gp.set('shutterspeed', idx-1)
+% Set the exposure time to the closest available value
+data = importdata("exptimes.txt"); % Import the exposure times table
+[val,idx] = min(abs(data-F.ExpTime)); % Check what is the closest value
+F.gp.set('bulb', 0) % Bulb has to be off to change exposure time
+F.gp.set('shutterspeed', idx-1) % Set the shutter speed (exposure time) index is different than the table
 
+% Set the delay between each capture
 if ~exist('delay','var') || isempty(delay)
     delay = F.Delay;
 end
 
+% plot starts liveview. I have no idea why, but without plotting, the
+% images wouldn't save (and everything gets stuck)
 F.gp.plot
 
 pause(2)
 
+% Set the period (delay) and start continuous capture
 period(F.gp, string(delay));
 continuous(F.gp, 'on');
 
-cd("~/");
+cd(wd); % return to the previous directory
+
+% Get the bash organizer script process
 pid = process('bash /home/ocs/matlab/skycam/checkfiles.sh');
 F.filecheck = pid;
