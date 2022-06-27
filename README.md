@@ -1,14 +1,12 @@
-# skycam
+# Skycam
 
-skycam is a tool for using DSLR cameras or astronomical cameras in order to survey the night sky
-
-# DSLR Camera Matlab use:
+Skycam is a tool for using DSLR cameras or astronomical cameras in order to survey the night sky
 
 ### Dependencies:
 
 System dependencies: [gphoto2 (libgphoto2)](http://www.gphoto.org/)
 
-For debugging porpouses: [gtkam](http://www.gphoto.org/proj/gtkam/)
+For debugging purposes: [gtkam](http://www.gphoto.org/proj/gtkam/)
 
 Matlab dependencies: [matlab-gphoto](https://gitlab.com/astrophotography/matlab-gphoto/), [matlab process](https://github.com/farhi/matlab-process)
 
@@ -18,11 +16,71 @@ Clone this repository to the desired location, then run "install.sh" to install 
 ```bash
 sudo bash install.sh
 ```
+---
+
+# DSLR Camera Matlab use:
+
+Skycam is written as a class in Matlab, first, we will need to create a skycam object (in this case, P):
+```matlab
+P = Skycam
+```
+**Next, we can assign the properties that we would like to change:**
+
+Exposure time, in seconds (default 8):
+```matlab
+P.ExpTime = x
+```
+
+Time delay between each capture, in seconds from the start of the previous capture (default 12):
+```matlab
+P.Delay = x
+```
+
+Image path (default '/home/ocs/skycam/'):
+```matlab
+P.ImagePath = 'x'
+```
+All that's left now is to initiate the connection with the camera, make sure it is connected via USB and turned on:
+```matlab
+P.connect
+```
+- Note that properties cannot be changed while the camera is connected and capturing images.
+- A bash script will run, organizing all the images in the image path directory.
+- This method will also search if an Arduino temperature sensor is connected.
+- A plot window will open with a live view of the camera, and the camera will continue capturing until it will be disconnected:
+```matlab
+P.disconnect
+```
+
+<details><summary> Properties </summary>
+
+| Property name | Summary | Default value | Visible?
+| --- | --- | --- | --- |
+| Delay | Time delay in seconds between the start of each capture | 12 | Yes |
+| ExpTime | The exposure time of the camera, note that this might be rounded to the closest available value, as not all values are possible | 8 | Yes |
+| ImagePath | The path where the images will be saved | '/home/ocs/skycam/' | Yes |
+| Temperature | Debug property, shows the temperature of the sensor, if connected | ~ | Only if found |
+| gp | The gphoto serial resource | Readonly | No |
+| TemperatureLogger | The temperature logger serial resource, if found | Readonly | No |
+| filecheck | The file organizing script process | Readonly | No |
+| InitialTemp | Debug property, the initial temperature of the sensor (if found). Used for comparison and to avoid overheating | Readonly | No |
+| found | Debug property, indicates if a temperature logger was found | 0 (false) | No |
+
+</details>
+
+<details><summary> Debug methods </summary>
+
+| Method name | Summary | Properties | 
+| --- | --- | --- |
+| connectSensor | Used to connect the Arduino temperature sensor with serialport, automatically detects port unless provided. This method is called by the 'connect' method automatically and detects if there is a sensor connected | Port, Baud - The serial port and baud rate of the Arduino |
+| imageTimer | Detects when a new file has been saved on disk. Blocks matlab, and can only be interruped with Ctrl + C | |
+
+</details>
 
 ---
 
-<details open>
-<summary> Basic Matlab usage: </summary>
+<details>
+<summary> Gphoto Matlab usage </summary>
 <br>
 	
 
@@ -50,12 +108,14 @@ Get camera's status:
 ```matlab
 p.status
 ```
+
+For more information about gphoto, see [man gphoto](https://manpages.ubuntu.com/manpages/impish/man1/gphoto2.1.html), and [matlab-gphoto](https://gitlab.com/astrophotography/matlab-gphoto/)
 	
 </details>
 
 <details>
 	
-<summary> For long exposure times:</summary>
+<summary> How does the camera handle different exposure times? </summary>
 <br>
 
 
@@ -146,5 +206,3 @@ sunalt = rad2deg(sun.Alt);
 </details>
 
 ---
-
-[Man gphoto](https://manpages.ubuntu.com/manpages/impish/man1/gphoto2.1.html)
