@@ -7,9 +7,12 @@ function F = connect(F,Port)
 % Gphoto will save the images to the current directory, so we change it to
 % the desired image path:
 wd = pwd; % Save the current directory (to return later)
+% Check if the image path director exists, if not, create it
+if ~exist(F.ImagePath, 'dir')
+    mkdir(F.ImagePath);
+end
 cd(F.ImagePath);
-addpath('/home/ocs/matlab/skycam/')
-addpath('/home/ocs/')
+addpath(wd);
 
 % Try to connect the temperature sensor and log its temperatures
 F.connectSensor
@@ -57,8 +60,11 @@ pause(2)
 period(F.gp, string(delay));
 continuous(F.gp, 'on');
 
-cd(wd); % return to the previous directory
-
-% Get the bash organizer script process
-pid = process('bash /home/ocs/matlab/skycam/checkfiles.sh');
+% Get the class' directory
+classdir = erase(which('Skycam'), "/@Skycam/Skycam.m");
+proc = "bash " + classdir + "/bin/checkfiles.sh"; % Formulate command
+% Start the process and get process id
+pid = process(convertStringsToChars(proc));
 F.filecheck = pid;
+
+cd(wd); % return to the previous directory

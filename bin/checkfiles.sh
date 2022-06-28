@@ -1,5 +1,4 @@
 #!/bin/bash
-cd ~/skycam
 
 # Procces old files (rename them)
 # Set the delimiter
