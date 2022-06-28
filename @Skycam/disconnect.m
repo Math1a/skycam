@@ -3,23 +3,39 @@
 
 function F = disconnect(F)
 
-clear('F.TemperatureLogger'); % Free the Arduino serial port
-F.gp.stop; % Stop the gphoto process
-pause(3) % Give gphoto some time to shut down and save the last images
-F.filecheck.stop; % Stop The organizer function
-
-% Delete and clear the gphoto process, I am not sure if this is required, 
-% but it seems to cause less bugs this way
-F.gp.delete; 
-clear('F.gp');
-
-% Try to close the plot window, if it stays open, gphoto might get stuck
-% next time
-try
-    close Figure 1
-catch err
-    % Closing all plot windows might be a little too destructive, 0n the
-    % other hand not closing the liveview window will almost certainly
-    % cause a bug if it stays open next time
-    %close all
+% If statement for different camera types, the two different cameras have
+% different connection and disconnection processes.
+if F.CameraType == "ASTRO"
+    F.CameraRes.disconnect; % Disconnect the camera
+    pause(3) % Give the camera some time to shut down and save the last images
+    F.CameraRes.delete; % Delete the camera object
+    
+elseif F.CameraType == "DSLR"
+    
+    clear('F.TemperatureLogger'); % Free the Arduino serial port
+    F.CameraRes.stop; % Stop the gphoto process
+    pause(3) % Give gphoto some time to shut down and save the last images
+    
+    if isprop(F, 'FileCheck') % Check if the property exists
+        F.FileCheck.stop; % Stop The organizer function
+    end
+    
+    % Delete and clear the gphoto process, I am not sure if this is required,
+    % but it seems to cause less bugs this way
+    F.CameraRes.delete;
+    
+    % Try to close the plot window, if it stays open, gphoto might get stuck
+    % next time
+    try
+        close Figure 1
+    catch err
+        % Closing all plot windows might be a little too destructive, 0n the
+        % other hand not closing the liveview window will almost certainly
+        % cause a bug if it stays open next time
+        %close all
+    end
+else
+    error("Invalid camera type!")
+end
+clear('F.CameraRes');
 end

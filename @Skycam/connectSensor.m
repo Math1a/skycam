@@ -7,7 +7,7 @@
 
 function F = connectSensor(F,Port,Baud)
 
-F.found = 0;
+F.Found = 0;
 
 if ~exist('Baud','var') || isempty(Baud)
     Baud = 9600;
@@ -21,7 +21,7 @@ if ~exist('Port','var') || isempty(Port)
             F.TemperatureLogger.flush
             resp = F.TemperatureLogger.readline;
             if resp.contains(".")
-                F.found = 1;
+                F.Found = 1;
             else
                 clear S
             end
@@ -31,10 +31,10 @@ if ~exist('Port','var') || isempty(Port)
     end
 else
     F.TemperatureLogger = serialport(Port,Baud); % Set the port and the baud rate
-    F.found = 1;
+    F.Found = 1;
 end
 
-if F.found
+if F.Found
     F.TemperatureLogger.flush
     F.InitialTemp = F.TemperatureLogger.readline;
 end
