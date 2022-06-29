@@ -10,6 +10,8 @@ For debugging purposes: [gtkam](http://www.gphoto.org/proj/gtkam/)
 
 Matlab dependencies: [matlab-gphoto](https://gitlab.com/astrophotography/matlab-gphoto/), [matlab process](https://github.com/farhi/matlab-process)
 
+Astronomical cameras: [LAST_QHYccd](https://github.com/EastEriq/LAST_QHYccd)
+
 #### Auto installation:
 
 Clone this repository to the desired location, then run "install.sh" to install the dependencies.
@@ -18,13 +20,23 @@ sudo bash install.sh
 ```
 ---
 
-# DSLR Camera Matlab use:
+# Camera Matlab use:
 
-Skycam is written as a class in Matlab, first, we will need to create a skycam object (in this case, P):
+Using a DSLR camera or an astronomical camera is pretty similar, they both use the same class, properties and methods.
+
+Skycam is written as a class in Matlab, first, we will need to create a Skycam object (in this case, P):
 ```matlab
 P = Skycam
 ```
 **Next, we can assign the properties that we would like to change:**
+
+The camera type, this is crucial in order for the camera to work properly (default DSLR):
+```matlab
+P.CameraType = 'DSLR' / 'ASTRO'
+```
+- Note that while only two values are possible, many inputs will be valid.
+For example; 'Nikon', 'Canon' and 'dslr' are valid inputs that will result in the CameraType to be 'DSLR'.
+- This is the same for astronomical cameras; 'QHY', 'QHY367', 'QHYCCD' 'astro' and some more inputs are valid and will result in the CameraType being 'ASTRO'.
 
 Exposure time, in seconds (default 8):
 ```matlab
@@ -36,7 +48,7 @@ Time delay between each capture, in seconds from the start of the previous captu
 P.Delay = x
 ```
 
-Image path (default '/home/ocs/skycam/'):
+Image path (default '/home/ocs/skycam/'), only relevant while the camera type is DSLR:
 ```matlab
 P.ImagePath = 'x'
 ```
@@ -44,27 +56,33 @@ All that's left now is to initiate the connection with the camera, make sure it 
 ```matlab
 P.connect
 ```
+The 'connect' function will initiate the image capture.
 - Note that properties cannot be changed while the camera is connected and capturing images.
-- A bash script will run, organizing all the images in the image path directory.
 - This method will also search if an Arduino temperature sensor is connected.
-- A plot window will open with a live view of the camera, and the camera will continue capturing until it will be disconnected:
+
+For DSLR cameras:
+- A bash script will run, organizing all the images in the image path directory.
+- A plot window will open with a live view of the camera, and the camera will continue capturing until it will be disconnected.
+
+Disconnection:
 ```matlab
 P.disconnect
 ```
 
-<details><summary> Properties </summary>
+<details open><summary> Properties </summary>
 
 | Property name | Summary | Default value | Visible?
 | --- | --- | --- | --- |
 | Delay | Time delay in seconds between the start of each capture | 12 | Yes |
 | ExpTime | The exposure time of the camera, note that this might be rounded to the closest available value, as not all values are possible | 8 | Yes |
+| CameraType | The type of camera used. Can only be "DSLR" or "ASTRO", multiple inputs are supported, but they will return only one of these two values | "DSLR" | Yes |
 | ImagePath | The path where the images will be saved | '/home/ocs/skycam/' | Yes |
 | Temperature | Debug property, shows the temperature of the sensor, if connected | ~ | Only if found |
-| gp | The gphoto serial resource | Readonly | No |
+| CameraRes | The camera serial resource, is used for both astronomical as DSLR cameras, but it will store different resources | Readonly | Yes |
 | TemperatureLogger | The temperature logger serial resource, if found | Readonly | No |
-| filecheck | The file organizing script process | Readonly | No |
+| FileCheck | The file organizing script process. Only used for DSLR cameras | Readonly | No |
 | InitialTemp | Debug property, the initial temperature of the sensor (if found). Used for comparison and to avoid overheating | Readonly | No |
-| found | Debug property, indicates if a temperature logger was found | 0 (false) | No |
+| Found | Debug property, indicates if a temperature logger was found | 0 (false) | No |
 
 </details>
 
@@ -73,7 +91,7 @@ P.disconnect
 | Method name | Summary | Properties | 
 | --- | --- | --- |
 | connectSensor | Used to connect the Arduino temperature sensor with serialport, automatically detects port unless provided. This method is called by the 'connect' method automatically and detects if there is a sensor connected | Port, Baud - The serial port and baud rate of the Arduino |
-| imageTimer | Detects when a new file has been saved on disk. Blocks matlab, and can only be interruped with Ctrl + C | |
+| imageTimer | Detects when a new file has been saved on disk. Blocks Matlab, and can only be interrupted with Ctrl + C | |
 
 </details>
 
@@ -86,7 +104,7 @@ P.disconnect
 
 Initiate the connection:
 ```matlab
-p = gphoto % + (port (leave empty for auto detect))
+p = gphoto % + (port (leave empty for auto-detect))
 ```
 Start LiveView:
 ```matlab
@@ -115,7 +133,7 @@ For more information about gphoto, see [man gphoto](https://manpages.ubuntu.com/
 
 <details>
 	
-<summary> How does the camera handle different exposure times? </summary>
+<summary> How does the camera handle different exposure times? (DSLR) </summary>
 <br>
 
 
@@ -185,15 +203,17 @@ Choice: 52 30.0000s
 Choice: 53 Bulb
 Choice: 54 Time
 ```
-Choice 53 ('Bulb') can be used for an indefinete exposure time
+Choice 53 ('Bulb') can be used for an indefinite exposure time
 
 </details>
 
 <details>
-<summary> Get the sun's altitude </summary>
+<summary> Get the sun's altitude (Currently unimplemented) </summary>
 <br>
 
-We use AstroPack's "celestial" in order to detremine where the sun is (in order to determine whether it is time to start taking images).
+The sun's altitude can be used to determine when to take images (only at night), it is not currently being used in the Skycam class, but it might be useful.
+
+We use AstroPack's "celestial" in order to determine where the sun is (in order to determine whether it is time to start taking images).
 Basic sun altitude reading:
 ```matlab
 % Get sun parameters
