@@ -20,7 +20,7 @@ classdef Skycam < handle % obs.LAST_Handle
     properties
         ExpTime = 8         % Exposure time, in seconds
         Delay = 12          % Delay between each capture
-        CameraType = "DSLR" % The typer of camera used (DSLR/ASTRO)
+        CameraType = "DSLR" % The type of camera used (DSLR/ASTRO)
         % The directory where the images will be saved (and the bash script will run)
         % Only for DSLR!
         ImagePath = "/home/ocs/skycam/"
@@ -92,8 +92,10 @@ classdef Skycam < handle % obs.LAST_Handle
             if ExpTime < 0
                 error("Exposure time cannot be less than 0!")
             elseif F.CameraType == "DSLR"
-                % Import the exposure times table
-                data = importdata("exptimes.txt");
+                % Get the class' directory
+                classdir = erase(which('Skycam'), "/@Skycam/Skycam.m");
+                % Set the exposure time to the closest available value
+                data = importdata(classdir + "/bin/exptimes.txt"); % Import the exposure times table
                 % Check what is the closest value
                 [val,idx] = min(abs(data-ExpTime));
                 % Set the class' value as an indicator

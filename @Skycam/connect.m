@@ -36,12 +36,13 @@ if F.CameraType == "ASTRO"
     
     % INCOMPLETE: Astronomical cameras still don't capture images! need to
     % figure out a way of taking images wthout blocking Matlab with a loop
+    % Maybe C.takeExposureSeq? Or use UnitCS?
     
     % Infinite loop that will take pictures at night, every minute
     while true % Maybe add a way to interrupt loop?
         tic() % Start measuring time
         disp("Taking an image...   " + datestr(now))
-        C.takeExposure(F.ExpTime) % Take one image with an exposure time of ExpTime 
+        C.takeExposure(F.ExpTime) % Take one image with an exposure time of ExpTime
         wait = toc(); % Stop measuring time
         pause (F.Delay - wait) % Wait until the next capture (if needed)
         
@@ -81,8 +82,10 @@ elseif F.CameraType == "DSLR"
         error("Could not find camera! Check connection")
     end
     
+    % Get the class' directory
+    classdir = erase(which('Skycam'), "/@Skycam/Skycam.m");
     % Set the exposure time to the closest available value
-    data = importdata("exptimes.txt"); % Import the exposure times table
+    data = importdata(classdir + "/bin/exptimes.txt"); % Import the exposure times table
     [val,idx] = min(abs(data-F.ExpTime)); % Check what is the closest value
     F.CameraRes.set('bulb', 0) % Bulb has to be off to change exposure time
     F.CameraRes.set('shutterspeed', idx-1) % Set the shutter speed (exposure time) index is different than the table
@@ -102,9 +105,8 @@ elseif F.CameraType == "DSLR"
     period(F.CameraRes, string(delay));
     continuous(F.CameraRes, 'on');
     
-    % Get the class' directory
-    classdir = erase(which('Skycam'), "/@Skycam/Skycam.m");
-    proc = "bash " + classdir + "/bin/checkfiles.sh"; % Formulate command
+    % Formulate command using class' directory
+    proc = "bash " + classdir + "/bin/checkfiles.sh";
     % Start the process and get process id
     pid = process(convertStringsToChars(proc));
     F.FileCheck = pid;
