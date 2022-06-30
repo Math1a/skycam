@@ -20,8 +20,14 @@ LOOP=0
 while true; do
     IMFILE="capt$(printf %04d $LOOP).nef"
     # Wait until new file is found
+    WAITTIME=0
     until test -f "$IMFILE"; do
 	sleep 0.1
+	((WAITTIME++))
+	# Set a timeout for the function
+	if test $WAITTIME -gt 1200; then
+		exit
+	fi
     done
 
     # Rename the newly found file

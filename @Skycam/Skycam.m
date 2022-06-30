@@ -19,7 +19,7 @@ classdef Skycam < handle % obs.LAST_Handle
     
     properties
         ExpTime = 8         % Exposure time, in seconds
-        Delay = 12          % Delay between each capture
+        Delay = 12          % Delay between each capture, only for DSLR
         CameraType = "DSLR" % The type of camera used (DSLR/ASTRO)
         % The directory where the images will be saved (and the bash script will run)
         % Only for DSLR!
@@ -27,8 +27,9 @@ classdef Skycam < handle % obs.LAST_Handle
     end
     
     properties(GetAccess = public, SetAccess = private)
-        Temperature                     % Debug: the reading of the Arduino temperature sensor
-        CameraRes           % The gphoto serial resource
+        Temperature     % Debug: the reading of the Arduino temperature sensor
+        CameraTemp      % The temperature of the camera, only for astronimical cameras that support it
+        CameraRes       % The gphoto serial resource
     end
     
     properties(Hidden)
@@ -58,6 +59,17 @@ classdef Skycam < handle % obs.LAST_Handle
             end
         end
         
+        function temp = get.CameraTemp(F)
+            if F.CameraType == "ASTRO"
+                % Get stats about the temperature to avoid overheating
+                temp = F.CameraRes.Temperature;
+                if temp >= 35
+                    warning("Camera is overheating!")
+                    F.disconnect
+                end
+            end
+        end
+        
         % Set the camera types, only two values are allowed: "DSLR" and "ASTRO"
         function set.CameraType(F, CameraType)
             % A switch case for many possible inputs, but only two are
@@ -84,6 +96,10 @@ classdef Skycam < handle % obs.LAST_Handle
                 otherwise
                     error("Possible camera types are DSLR or ASTRO!")
             end
+            % Astronimical cameras cannot have delay (because they use TakeLive)
+            if F.CameraType == "ASTRO"
+                F.Delay = 0;
+            end
         end
         
         % Currently unused as the exposure time cannot be changed during
@@ -104,6 +120,16 @@ classdef Skycam < handle % obs.LAST_Handle
                 F.ExpTime = ExpTime;
             else
                 error("Invalid camera type!")
+            end
+        end
+        
+        function set.Delay(F, Delay)
+            % Astronimical cameras cannot have delay (because they use TakeLive
+            if F.CameraType == "ASTRO"
+                F.Delay = 0;
+                disp("Astronomical cameras cannot have a delay!")
+            else
+                F.Delay = Delay;
             end
         end
         

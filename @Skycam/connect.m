@@ -33,26 +33,12 @@ if F.CameraType == "ASTRO"
     C.coolingOff
     
     F.CameraRes = C; % Save the camera object in the class
-    
-    % INCOMPLETE: Astronomical cameras still don't capture images! need to
-    % figure out a way of taking images wthout blocking Matlab with a loop
-    % Maybe C.takeExposureSeq? Or use UnitCS?
-    
-    % Infinite loop that will take pictures at night, every minute
-    while true % Maybe add a way to interrupt loop?
-        tic() % Start measuring time
-        disp("Taking an image...   " + datestr(now))
-        C.takeExposure(F.ExpTime) % Take one image with an exposure time of ExpTime
-        wait = toc(); % Stop measuring time
-        pause (F.Delay - wait) % Wait until the next capture (if needed)
-        
-        % Get stats about the temperature to avoid overheating
-        disp("Temperature: " + C.Temperature)
-        if C.Temperature >= 35
-            C.disconnect
-            error("Temperature too high!")
-        end
-    end
+
+    % Take a very large amout of images in sequence, this number should not
+    % be reached, and the camera will likely be shut down before. 
+    % This has no delay between each capture
+    C.takeLive(7200,F.ExpTime) % Dosen't work for QHY367!
+    % Find another solution using timers or slaves
     
 elseif F.CameraType == "DSLR"
     %% DSLR
