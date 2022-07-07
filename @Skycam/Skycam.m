@@ -15,7 +15,7 @@
 % shutdown can cause the camera to get stuck.
 % If the camera does get stuck, restart it (physically).
 
-classdef Skycam < handle % obs.LAST_Handle
+classdef Skycam < obs.LAST_Handle
     
     properties
         ExpTime = 8         % Exposure time, in seconds
@@ -72,6 +72,11 @@ classdef Skycam < handle % obs.LAST_Handle
         
         % Set the camera types, only two values are allowed: "DSLR" and "ASTRO"
         function set.CameraType(F, CameraType)
+            if ~isempty(F.FileCheck) % Check if the camera is already running
+                error("Cannot change mode while camera is running!" + ...
+                    newline + "Use disconnect or create a new Skycam object")
+            end
+            
             % A switch case for many possible inputs, but only two are
             % possible (DSLR and ASTRO)
             switch lower(CameraType)
@@ -96,10 +101,6 @@ classdef Skycam < handle % obs.LAST_Handle
                 otherwise
                     error("Possible camera types are DSLR or ASTRO!")
             end
-            % Astronimical cameras cannot have delay (because they use TakeLive)
-            if F.CameraType == "ASTRO"
-                F.Delay = 0;
-            end
         end
         
         % Currently unused as the exposure time cannot be changed during
@@ -107,6 +108,8 @@ classdef Skycam < handle % obs.LAST_Handle
         function set.ExpTime(F, ExpTime)
             if ExpTime < 0
                 error("Exposure time cannot be less than 0!")
+            elseif ExpTime > F.Delay
+                error("Exposure time cannot be greater than the delay")
             elseif F.CameraType == "DSLR"
                 % Get the class' directory
                 classdir = erase(which('Skycam'), "/@Skycam/Skycam.m");
@@ -124,14 +127,10 @@ classdef Skycam < handle % obs.LAST_Handle
         end
         
         function set.Delay(F, Delay)
-            % Astronimical cameras cannot have delay (because they use TakeLive
-            if F.CameraType == "ASTRO"
-                F.Delay = 0;
-                disp("Astronomical cameras cannot have a delay!")
-            else
-                F.Delay = Delay;
+            if Delay < F.ExpTime
+                error("Delay cannot be smaller than exposure time")
             end
+            F.Delay = Delay;
         end
-        
     end
 end

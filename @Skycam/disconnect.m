@@ -16,10 +16,6 @@ elseif F.CameraType == "DSLR"
     F.CameraRes.stop; % Stop the gphoto process
     pause(3) % Give gphoto some time to shut down and save the last images
     
-    if isprop(F, 'FileCheck') % Check if the property exists
-        F.FileCheck.stop; % Stop The organizer function
-    end
-    
     % Delete and clear the gphoto process, I am not sure if this is required,
     % but it seems to cause less bugs this way
     F.CameraRes.delete;
@@ -36,6 +32,11 @@ elseif F.CameraType == "DSLR"
     end
 else
     error("Invalid camera type!")
+end
+
+if isprop(F, 'FileCheck') % Check if the property exists
+    F.FileCheck.stop; % Stop The organizer function
+    F.FileCheck.delete;
 end
 clear('F.CameraRes');
 end

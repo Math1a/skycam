@@ -34,11 +34,18 @@ if F.CameraType == "ASTRO"
     
     F.CameraRes = C; % Save the camera object in the class
 
-    % Take a very large amout of images in sequence, this number should not
-    % be reached, and the camera will likely be shut down before. 
-    % This has no delay between each capture
-    C.takeLive(7200,F.ExpTime) % Dosen't work for QHY367!
-    % Find another solution using timers or slaves
+    
+    % The timer will call a specific function every x seconds, in this case
+    % it will capture an image every desired interval
+    t = timer; % Create a timer object
+    t. period = F.Delay; % Set the period of the timer
+    t.TasksToExecute = 7200; % Maximun number of exposures
+    t.ExecutionMode = 'fixedRate'; % Set execution mode
+    t.TimerFcn = @(~,~)takeExposure(F); % The command that will execute
+    start(t) % Start the timer
+    
+    F.FileCheck = t;
+    % Don't ever forget to delete the timer!
     
 elseif F.CameraType == "DSLR"
     %% DSLR
