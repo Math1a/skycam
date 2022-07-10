@@ -33,7 +33,7 @@ if F.CameraType == "ASTRO"
     C.coolingOff
     
     F.CameraRes = C; % Save the camera object in the class
-
+    
     
     % The timer will call a specific function every x seconds, in this case
     % it will capture an image every desired interval
@@ -59,6 +59,28 @@ elseif F.CameraType == "DSLR"
     cd(F.ImagePath);
     addpath(wd);
     
+    % New way of getting the exposure times, ask the camera, only works
+    % when not connected
+    [result, raw] = system("gphoto2 --get-config=shutterspeed");
+    if result ~= 0
+        error("Error communicating with camera! Check if busy")
+    end
+    out = splitlines(raw);
+    choices = string.empty;
+    for s = 1:length(out)
+        str = string(out{s});
+        if contains(str,"Choice:")
+            str = erase(str, "Choice: ");
+            str = erase(str, "s");
+            choices(end+1) = str;
+        end
+    end
+    data = [];
+    for s = 1:length(choices)
+        num = erase(choices(s), strcat(string(s-1) + ' '));
+        data(end+1) = num;
+    end
+    
     % Initiate the gphoto process, gphoto automatically detects the port if
     % none is given
     if ~exist('Port','var') || isempty(Port)
@@ -75,10 +97,9 @@ elseif F.CameraType == "DSLR"
         error("Could not find camera! Check connection")
     end
     
-    % Get the class' directory
-    classdir = erase(which('Skycam'), "/@Skycam/Skycam.m");
+    % Old way of getting exposure times: with text file
     % Set the exposure time to the closest available value
-    data = importdata(classdir + "/bin/exptimes.txt"); % Import the exposure times table
+    %data = importdata(classdir + "/bin/exptimes.txt"); % Import the exposure times table
     [val,idx] = min(abs(data-F.ExpTime)); % Check what is the closest value
     F.CameraRes.set('bulb', 0) % Bulb has to be off to change exposure time
     F.CameraRes.set('shutterspeed', idx-1) % Set the shutter speed (exposure time) index is different than the table
@@ -98,6 +119,8 @@ elseif F.CameraType == "DSLR"
     period(F.CameraRes, string(delay));
     continuous(F.CameraRes, 'on');
     
+    % Get the class' directory
+    classdir = erase(which('Skycam'), "/@Skycam/Skycam.m");
     % Formulate command using class' directory
     proc = "bash " + classdir + "/bin/checkfiles.sh";
     % Start the process and get process id

@@ -34,7 +34,7 @@ classdef Skycam < obs.LAST_Handle
     
     properties(Hidden)
         TemperatureLogger   % The temperature logger serial resource
-        FileCheck           % The bash script procces that checks for new files
+        FileCheck           % DSLR: The bash script procces that checks for new files OR ASTRO: The timer object that calls TakeExposure
         InitialTemp         % Debug: The initial temperature is recorded to avoid overheating
         Found = 0           % Whether or not an arduino temperature sensor is connected
     end
@@ -103,18 +103,44 @@ classdef Skycam < obs.LAST_Handle
             end
         end
         
-        % Currently unused as the exposure time cannot be changed during
-        % captures
         function set.ExpTime(F, ExpTime)
-            if ExpTime < 0
+            if ~isempty(F.FileCheck) % Check if the camera is already running
+                error("Cannot change exposure time while camera is running!" + ...
+                    newline + "Use disconnect and then change the exposure time")
+            elseif ExpTime < 0
                 error("Exposure time cannot be less than 0!")
             elseif ExpTime > F.Delay
                 error("Exposure time cannot be greater than the delay")
             elseif F.CameraType == "DSLR"
+                % Old way of comparing (with text list)
                 % Get the class' directory
-                classdir = erase(which('Skycam'), "/@Skycam/Skycam.m");
+                %classdir = erase(which('Skycam'), "/@Skycam/Skycam.m");
                 % Set the exposure time to the closest available value
-                data = importdata(classdir + "/bin/exptimes.txt"); % Import the exposure times table
+                %data = importdata(classdir + "/bin/exptimes.txt"); % Import the exposure times table
+                
+                % New way, more reliable as it asks the camera every time,
+                % but it is slower and also can't check while the camera is
+                % connected
+                [result, raw] = system("gphoto2 --get-config=shutterspeed");
+                
+                if result ~= 0
+                    error("Error communicating with camera! Check if busy")
+                end
+                out = splitlines(raw);
+                choices = string.empty;
+                for s = 1:length(out)
+                    str = string(out{s});
+                    if contains(str,"Choice:")
+                        str = erase(str, "Choice: ");
+                        str = erase(str, "s");
+                        choices(end+1) = str;
+                    end
+                end
+                data = [];
+                for s = 1:length(choices)
+                    num = erase(choices(s), strcat(string(s-1) + ' '));
+                    data(end+1) = num;
+                end
                 % Check what is the closest value
                 [val,idx] = min(abs(data-ExpTime));
                 % Set the class' value as an indicator
