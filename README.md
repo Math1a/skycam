@@ -64,23 +64,32 @@ For DSLR cameras:
 - A bash script will run, organizing all the images in the image path directory.
 - A plot window will open with a live view of the camera, and the camera will continue capturing until it will be disconnected.
 
+For Astronimical cameras:
+- A timer object is created that will call the private property "takeExposure" every {Delay} seconds.
+- Currently the display is turned off for technical reasons, but it can be turned on for liveview
+
+**Correctly shutting down is crucial!** Otherwise, it can leave the timer/bash script running in the background and cause errors.
+
+*Do not clear or delete the class before disconnecting.*
+
 Disconnection:
 ```matlab
 P.disconnect
 ```
+Disconnection will take a few seconds, it will close the liveview window and clear the class' objects.
 
 <details open><summary> Properties </summary>
 
 | Property name | Summary | Default value | Visible?
 | --- | --- | --- | --- |
-| Delay | Time delay in seconds between the start of each capture | 12 | Yes |
 | ExpTime | The exposure time of the camera, note that this might be rounded to the closest available value, as not all values are possible | 8 | Yes |
+| Delay | Time delay in seconds between the start of each capture | 12 | Yes |
 | CameraType | The type of camera used. Can only be "DSLR" or "ASTRO", multiple inputs are supported, but they will return only one of these two values | "DSLR" | Yes |
 | ImagePath | The path where the images will be saved | '/home/ocs/skycam/' | Yes |
 | Temperature | Debug property, shows the temperature of the sensor, if connected | ~ | Only if found |
 | CameraRes | The camera serial resource, is used for both astronomical as DSLR cameras, but it will store different resources | Readonly | Yes |
 | TemperatureLogger | The temperature logger serial resource, if found | Readonly | No |
-| FileCheck | The file organizing script process. Only used for DSLR cameras | Readonly | No |
+| FileCheck | In DSLR mode: The file organizing script process. <br /> In ASTRO mode: The timer object that calls TakeExposure | Readonly | No |
 | InitialTemp | Debug property, the initial temperature of the sensor (if found). Used for comparison and to avoid overheating | Readonly | No |
 | Found | Debug property, indicates if a temperature logger was found | 0 (false) | No |
 
@@ -143,65 +152,62 @@ p.set('shutterspeed', /*Shutter Speed Choice Number*/)
 ```
 Possible choices:
 ```
-Label: Shutter Speed                                                           
+Label: Shutter Speed
 Readonly: 0
 Type: RADIO
-Current: 0.5000s
-Choice: 0 0.0001s
-Choice: 1 0.0002s
-Choice: 2 0.0003s
-Choice: 3 0.0004s
-Choice: 4 0.0005s
-Choice: 5 0.0006s
-Choice: 6 0.0008s
-Choice: 7 0.0010s
-Choice: 8 0.0012s
-Choice: 9 0.0015s
-Choice: 10 0.0020s
-Choice: 11 0.0025s
-Choice: 12 0.0031s
-Choice: 13 0.0040s
-Choice: 14 0.0050s
-Choice: 15 0.0062s
-Choice: 16 0.0080s
-Choice: 17 0.0100s
-Choice: 18 0.0125s
-Choice: 19 0.0166s
-Choice: 20 0.0200s
-Choice: 21 0.0250s
-Choice: 22 0.0333s
-Choice: 23 0.0400s
-Choice: 24 0.0500s
-Choice: 25 0.0666s
-Choice: 26 0.0769s
-Choice: 27 0.1000s
-Choice: 28 0.1250s
-Choice: 29 0.1666s
-Choice: 30 0.2000s
-Choice: 31 0.2500s
-Choice: 32 0.3333s
-Choice: 33 0.4000s
-Choice: 34 0.5000s
-Choice: 35 0.6250s
-Choice: 36 0.7692s
-Choice: 37 1.0000s
-Choice: 38 1.3000s
-Choice: 39 1.6000s
-Choice: 40 2.0000s
-Choice: 41 2.5000s
-Choice: 42 3.0000s
-Choice: 43 4.0000s
-Choice: 44 5.0000s
-Choice: 45 6.0000s
-Choice: 46 8.0000s
-Choice: 47 10.0000s
-Choice: 48 13.0000s
-Choice: 49 15.0000s
-Choice: 50 20.0000s
-Choice: 51 25.0000s
-Choice: 52 30.0000s
-Choice: 53 Bulb
-Choice: 54 Time
+Current: 0.0166s
+Choice: 0 0.0005s
+Choice: 1 0.0006s
+Choice: 2 0.0008s
+Choice: 3 0.0010s
+Choice: 4 0.0012s
+Choice: 5 0.0015s
+Choice: 6 0.0020s
+Choice: 7 0.0025s
+Choice: 8 0.0031s
+Choice: 9 0.0040s
+Choice: 10 0.0050s
+Choice: 11 0.0062s
+Choice: 12 0.0080s
+Choice: 13 0.0100s
+Choice: 14 0.0125s
+Choice: 15 0.0166s
+Choice: 16 0.0200s
+Choice: 17 0.0250s
+Choice: 18 0.0333s
+Choice: 19 0.0400s
+Choice: 20 0.0500s
+Choice: 21 0.0666s
+Choice: 22 0.0769s
+Choice: 23 0.1000s
+Choice: 24 0.1250s
+Choice: 25 0.1666s
+Choice: 26 0.2000s
+Choice: 27 0.2500s
+Choice: 28 0.3333s
+Choice: 29 0.4000s
+Choice: 30 0.5000s
+Choice: 31 0.6250s
+Choice: 32 0.7692s
+Choice: 33 1.0000s
+Choice: 34 1.3000s
+Choice: 35 1.6000s
+Choice: 36 2.0000s
+Choice: 37 2.5000s
+Choice: 38 3.0000s
+Choice: 39 4.0000s
+Choice: 40 5.0000s
+Choice: 41 6.0000s
+Choice: 42 8.0000s
+Choice: 43 10.0000s
+Choice: 44 13.0000s
+Choice: 45 15.0000s
+Choice: 46 20.0000s
+Choice: 47 25.0000s
+Choice: 48 30.0000s
+Choice: 49 Bulb
+Choice: 50 Time
+END
 ```
 Choice 53 ('Bulb') can be used for an indefinite exposure time
 
