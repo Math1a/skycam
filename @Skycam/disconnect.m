@@ -9,6 +9,7 @@ if F.CameraType == "ASTRO"
     F.CameraRes.disconnect; % Disconnect the camera
     pause(3) % Give the camera some time to shut down and save the last images
     F.CameraRes.delete; % Delete the camera object
+    F.CameraRes = [];
     
 elseif F.CameraType == "DSLR"
     
@@ -34,9 +35,9 @@ else
     error("Invalid camera type!")
 end
 
-if isprop(F, 'FileCheck') % Check if the property exists
+if ~isempty(F.FileCheck) % Check if the property exists
     F.FileCheck.stop; % Stop The organizer function
     F.FileCheck.delete;
+    F.FileCheck = [];
 end
-clear('F.CameraRes');
 end

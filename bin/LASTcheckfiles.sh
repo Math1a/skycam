@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Procces old files (rename them)
+# Procces invalid files (that are not named)
 # Set the delimiter
 IFS=$'\n'
 OLDFILES=($(find -maxdepth 1 -name "capt**.nef" -print))
-# Make a new directory for old images
+# Make a new directory for old images, and put them in
 if test ${#OLDFILES[@]} -gt 0; then
 	NEWDIR=OldImages_$(printf '%(%Y-%m-%d_%H:%M:%S)T\n' -1)
 	mkdir $NEWDIR
@@ -14,6 +14,9 @@ if test ${#OLDFILES[@]} -gt 0; then
     		((LOOP++))
 	done
 fi
+
+# Check if there were other captures today
+TODAY=($(find -maxdepth 1 -name "LAST.dslr1.in**.nef" -print))
 
 # Infinite loop, basically a for loop for every new file
 LOOP=0
@@ -29,10 +32,11 @@ while true; do
 		exit
 	fi
     done
+	
+((LOOP++))
+# Rename the newly found file
+SEQ=$(expr $LOOP + ${#TODAY[@]})
+mv -f $IMFILE "./LAST.dslr1.in_$(date +%Y%m%d.%H%M%S.%3N)_clear__$(printf %03d $SEQ)___sci_raw_Image_1.nef"
 
-    # Rename the newly found file
-    mv -f $IMFILE "./SkyImage_$(printf '%(%Y-%m-%d_%H:%M:%S)T\n' -1).nef"
-
-    ((LOOP++))
 done
 

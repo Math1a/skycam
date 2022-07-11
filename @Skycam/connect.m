@@ -56,13 +56,30 @@ elseif F.CameraType == "DSLR"
     if ~exist(F.ImagePath, 'dir')
         mkdir(F.ImagePath);
     end
-    cd(F.ImagePath);
+    
+    % Get the class' directory
+    classdir = erase(which('Skycam'), "/@Skycam/Skycam.m");
+    % Check if 'AstroPack' is present (LAST)
+    if exist('ImagePath', 'class')
+        % Create the data direcotry
+        DataDir = strcat(F.ImagePath,datestr(now, '/yyyy/mm/dd'),'/raw');
+        mkdir(DataDir)
+        cd(DataDir)
+        % Formulate command using class' directory
+        proc = "bash " + classdir + "/bin/LASTcheckfiles.sh";
+    else
+        cd(F.ImagePath);
+        % Formulate command using class' directory
+        proc = "bash " + classdir + "/bin/checkfiles.sh";
+    end
+    
     addpath(wd);
     
     % New way of getting the exposure times, ask the camera, only works
     % when not connected
     [result, raw] = system("gphoto2 --get-config=shutterspeed");
     if result ~= 0
+        cd(wd) % return to the previous directory
         error("Error communicating with camera! Check if busy")
     end
     out = splitlines(raw);
@@ -90,11 +107,25 @@ elseif F.CameraType == "DSLR"
     end
     
     pause(5)
+    loops = 0;
+    while string(F.CameraRes.status) == "BUSY"
+        % Wait until camera is connected and ready
+        pause(0.1)
+        loops = loops + 1;
+        % Timeout condition
+        if loops > 6000
+            break
+        end
+    end
+    
+    
     % Check successful connection
-    if string(F.CameraRes.status) == "IDLE" || string(F.CameraRes.status) == "BUSY"
+    if string(F.CameraRes.status) == "IDLE"
         fprintf("\nCamera connected successfully!\n\n")
     else
-        error("Could not find camera! Check connection")
+        cd(wd) % return to the previous directory
+        F.disconnect
+        error("Error connecting to the camera, check connection or try restarting")
     end
     
     % Old way of getting exposure times: with text file
@@ -119,16 +150,16 @@ elseif F.CameraType == "DSLR"
     period(F.CameraRes, string(delay));
     continuous(F.CameraRes, 'on');
     
-    % Get the class' directory
-    classdir = erase(which('Skycam'), "/@Skycam/Skycam.m");
-    % Formulate command using class' directory
-    proc = "bash " + classdir + "/bin/checkfiles.sh";
     % Start the process and get process id
     pid = process(convertStringsToChars(proc));
     F.FileCheck = pid;
     
     cd(wd); % return to the previous directory
     
+    if string(F.CameraRes.status) == "ERROR"
+        F.disconnect
+        error("Camera error! Please turn the camera off and on again!")
+    end
 else
     error("Invalid camera type!")
 end
