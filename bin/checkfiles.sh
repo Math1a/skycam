@@ -18,12 +18,14 @@ fi
 # Infinite loop, basically a for loop for every new file
 LOOP=0
 while true; do
-    IMFILE="capt$(printf %04d $LOOP).nef"
+    IMFILE=($(find -maxdepth 1 -name "capt**.nef" -print))
     # Wait until new file is found
     WAITTIME=0
     until test -f "$IMFILE"; do
 	sleep 0.1
 	((WAITTIME++))
+	# Check if new file exists
+	IMFILE=($(find -maxdepth 1 -name "capt**.nef" -print))
 	# Set a timeout for the function
 	if test $WAITTIME -gt 1200; then
 		exit

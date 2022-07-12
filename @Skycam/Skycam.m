@@ -34,7 +34,9 @@ classdef Skycam < obs.LAST_Handle
     
     properties(Hidden)
         TemperatureLogger   % The temperature logger serial resource
+        DataDir             % The directory where th gphoto process will run
         FileCheck           % DSLR: The bash script procces that checks for new files OR ASTRO: The timer object that calls TakeExposure
+        ExpTimesData        % DSLR: The possible exposure times data table
         InitialTemp         % Debug: The initial temperature is recorded to avoid overheating
         Found = 0           % Whether or not an arduino temperature sensor is connected
     end
