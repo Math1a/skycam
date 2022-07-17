@@ -34,6 +34,7 @@ classdef Skycam < obs.LAST_Handle
     
     properties(Hidden)
         TemperatureLogger   % The temperature logger serial resource
+        TempData            % The data table of the temperatures over time
         DataDir             % The directory where th gphoto process will run
         FileCheck           % DSLR: The bash script procces that checks for new files OR ASTRO: The timer object that calls TakeExposure
         ExpTimesData        % DSLR: The possible exposure times data table
@@ -55,9 +56,17 @@ classdef Skycam < obs.LAST_Handle
         
         % Get the temperature whenever it is requested
         function d = get.Temperature(F)
-            if exist('F.TemperatureLogger','var') || ~isempty('F.TemperatureLogger')
-                F.TemperatureLogger.flush % Clear the serial port
-                d = F.TemperatureLogger.readline; % Read the last line from the serial port
+            if F.Found 
+                if isempty(F.TemperatureLogger) % Digitemp
+                    % Read trough system digitemp 
+                    [~, resp] = system("digitemp_DS9097 -q -t 0 -c .digitemprc");
+                    % Find where C degrees are and save them
+                    index = strfind(resp, "C:");
+                    d = resp(index + 3: index + 7);
+                else % Arduino
+                    F.TemperatureLogger.flush % Clear the serial port
+                    d = F.TemperatureLogger.readline; % Read the last line from the serial port
+                end
             end
         end
         

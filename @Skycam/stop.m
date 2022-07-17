@@ -18,6 +18,8 @@ if F.CameraType == "DSLR"
         % cause a bug if it stays open next time
         %close all
     end
+elseif F.CameraType == "ASTRO"
+    
 else
     error("Invalid camera type!")
 end
