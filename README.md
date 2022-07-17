@@ -24,13 +24,13 @@ sudo bash install.sh
 
 Using a DSLR camera or an astronomical camera is pretty similar, they both use the same class, properties and methods.
 
-Skycam is written as a class in Matlab, first, we will need to create a Skycam object (in this case, P):
+**Skycam is written as a class in Matlab, first, we will need to create a Skycam object (in this case, P):**
 ```matlab
 P = Skycam
 ```
-**Next, we can assign the properties that we would like to change:**
+*Next, we can assign the properties that we would like to change:*
 
-The camera type, this is crucial in order for the camera to work properly (default DSLR):
+**The camera type, this is crucial in order for the camera to work properly (default DSLR):**
 ```matlab
 P.CameraType = 'DSLR' / 'ASTRO'
 ```
@@ -52,27 +52,42 @@ Image path (default '/home/ocs/skycam/'), only relevant while the camera type is
 ```matlab
 P.ImagePath = 'x'
 ```
-All that's left now is to initiate the connection with the camera, make sure it is connected via USB and turned on:
+**Initiate the connection with the camera, make sure it is connected via USB and turned on:**
 ```matlab
 P.connect
 ```
-The 'connect' function will initiate the image capture.
-- Note that properties cannot be changed while the camera is connected and capturing images.
 - This method will also search if an Arduino temperature sensor is connected.
+
+**To start capturing images, use the 'start' function**
+```matlab
+P.start
+```
+
+- Note that properties cannot be changed while the camera is started and capturing images.
 
 For DSLR cameras:
 - A bash script will run, organizing all the images in the image path directory.
 - A plot window will open with a live view of the camera, and the camera will continue capturing until it will be disconnected.
+- If astropack is present, the images will be saved with (AstroPack's) 'ImagePath''s standard, else, it will be saved just in 'P.ImagePath'.
 
 For Astronimical cameras:
 - A timer object is created that will call the private property "takeExposure" every {Delay} seconds.
-- Currently the display is turned off for technical reasons, but it can be turned on for liveview
+- Currently the display is turned off for technical reasons, but it can be turned on for liveview (with ClassCommand).
+
+**Stopping the image capture:**
+```matlab
+P.stop
+```
+
+- Stopping the image capture is preferable if you intend to use the same camera later and not turn it off in the meantime.
+- If you turn off the camera, you should first disconnect it.
+- Reconnecting the same camera with 'connect' instantly after 'disconnect' may cause some errors in DSLR cameras.
 
 **Correctly shutting down is crucial!** Otherwise, it can leave the timer/bash script running in the background and cause errors.
 
 *Do not clear or delete the class before disconnecting.*
 
-Disconnection:
+**Disconnection:**
 ```matlab
 P.disconnect
 ```
@@ -85,11 +100,13 @@ Disconnection will take a few seconds, it will close the liveview window and cle
 | ExpTime | The exposure time of the camera, note that this might be rounded to the closest available value, as not all values are possible | 8 | Yes |
 | Delay | Time delay in seconds between the start of each capture | 12 | Yes |
 | CameraType | The type of camera used. Can only be "DSLR" or "ASTRO", multiple inputs are supported, but they will return only one of these two values | "DSLR" | Yes |
-| ImagePath | The path where the images will be saved | '/home/ocs/skycam/' | Yes |
+| ImagePath | The parent directory where the images will be saved | '/home/ocs/skycam/' | Yes |
 | Temperature | Debug property, shows the temperature of the sensor, if connected | ~ | Only if found |
 | CameraRes | The camera serial resource, is used for both astronomical as DSLR cameras, but it will store different resources | Readonly | Yes |
 | TemperatureLogger | The temperature logger serial resource, if found | Readonly | No |
+| DataDir | AstroPack: The child directory where the images will be saved, a subdirectory of ImagePath. | Readonly | No |
 | FileCheck | In DSLR mode: The file organizing script process. <br /> In ASTRO mode: The timer object that calls TakeExposure | Readonly | No |
+| ExpTimesData | DSLR - Only: The data table of the possible exposure times that is read from the camera's settings | Readonly | No | 
 | InitialTemp | Debug property, the initial temperature of the sensor (if found). Used for comparison and to avoid overheating | Readonly | No |
 | Found | Debug property, indicates if a temperature logger was found | 0 (false) | No |
 
