@@ -32,9 +32,9 @@ classdef Skycam < obs.LAST_Handle
         CameraRes       % The gphoto serial resource
     end
     
-    properties(Hidden)
+    properties(Hidden, SetAccess = private)
+        SensorType          % The type of temperature sensor
         TemperatureLogger   % The temperature logger serial resource
-        TempData            % The data table of the temperatures over time
         DataDir             % The directory where th gphoto process will run
         FileCheck           % DSLR: The bash script procces that checks for new files OR ASTRO: The timer object that calls TakeExposure
         ExpTimesData        % DSLR: The possible exposure times data table
@@ -57,7 +57,7 @@ classdef Skycam < obs.LAST_Handle
         % Get the temperature whenever it is requested
         function d = get.Temperature(F)
             if F.Found 
-                if isempty(F.TemperatureLogger) % Digitemp
+                if F.SensorType == "Digitemp"
                     % Read trough system digitemp 
                     [~, resp] = system("digitemp_DS9097 -q -t 0 -c .digitemprc");
                     % Find where C degrees are and save them

@@ -25,6 +25,7 @@ if ~exist('Port','var') || isempty(Port)
             if string(resp).contains(".")
                 F.Found = 1;
                 F.TemperatureLogger = S;
+                F.SensorType = "Arduino";
                 break
             else
                 clear S
@@ -48,6 +49,7 @@ else
                 [~, resp] = system(strcat("digitemp_DS9097 -i -s ", ports(i)));
                 if string(resp).contains("Wrote .digitemprc")
                     F.Found = 1;
+                    F.SensorType = "Digitemp";
                     break
                 end
             catch

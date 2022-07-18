@@ -13,7 +13,6 @@ if F.CameraType == "ASTRO"
     
 elseif F.CameraType == "DSLR"
     
-    clear('F.TemperatureLogger'); % Free the Arduino serial port
     F.CameraRes.stop; % Stop the gphoto process
     pause(3) % Give gphoto some time to shut down and save the last images
     
@@ -35,9 +34,17 @@ else
     error("Invalid camera type!")
 end
 
+if ~isempty(F.SensorType) && F.SensorType == "Digitemp"
+    F.TemperatureLogger.kill
+    F.TemperatureLogger.delete
+else % Arduino
+    clear('F.TemperatureLogger'); % Free the Arduino serial port
+end
+
 if ~isempty(F.FileCheck) % Check if the property exists
     F.FileCheck.stop; % Stop The organizer function
     F.FileCheck.delete;
     F.FileCheck = [];
 end
+
 end
