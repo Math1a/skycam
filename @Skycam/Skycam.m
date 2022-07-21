@@ -27,13 +27,13 @@ classdef Skycam < obs.LAST_Handle
     end
     
     properties(GetAccess = public, SetAccess = private)
-        Temperature     % Debug: the reading of the Arduino temperature sensor
-        CameraTemp      % The temperature of the camera, only for astronimical cameras that support it
-        CameraRes       % The gphoto serial resource
+        Temperature % Debug: the reading of the Arduino temperature sensor
+        CameraTemp  % The temperature of the camera, only for astronimical cameras that support it
+        CameraRes   % The gphoto serial resource
+        SensorType = "Digitemp" % The type of temperature sensor
     end
     
     properties(Hidden, SetAccess = private)
-        SensorType          % The type of temperature sensor
         TemperatureLogger   % The temperature logger serial resource
         DataDir             % The directory where th gphoto process will run
         FileCheck           % DSLR: The bash script procces that checks for new files OR ASTRO: The timer object that calls TakeExposure

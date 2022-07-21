@@ -35,8 +35,7 @@ else
 end
 
 if ~isempty(F.SensorType) && F.SensorType == "Digitemp"
-    F.TemperatureLogger.kill
-    F.TemperatureLogger.delete
+    F.stopLogging
 else % Arduino
     clear('F.TemperatureLogger'); % Free the Arduino serial port
 end

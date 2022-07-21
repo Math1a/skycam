@@ -4,13 +4,13 @@
 function F = connect(F,Port)
 %% Temperature
 % Try to connect the temperature sensor and log its temperatures
-F.connectSensor
-if F.Found
-    disp("Temperature data logger detected!")
-    disp("Initial temperature: " + F.Temperature)
-else
-    disp("No temperature data logger detected. Temperature will not be monitored")
-end
+% F.connectSensor
+% if F.Found
+%     disp("Temperature data logger detected!")
+%     disp("Initial temperature: " + F.Temperature)
+% else
+%     disp("No temperature data logger detected. Temperature will not be monitored")
+% end
 
 % If statement for different camera types, the two different cameras have
 % different connection and disconnection processes.
