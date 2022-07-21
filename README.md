@@ -4,13 +4,20 @@ Skycam is a tool for using DSLR cameras or astronomical cameras in order to surv
 
 ### Dependencies:
 
-System dependencies: [gphoto2 (libgphoto2)](http://www.gphoto.org/)
+System dependencies: 
+- [gphoto2 (libgphoto2)](http://www.gphoto.org/)
 
-For debugging purposes: [gtkam](http://www.gphoto.org/proj/gtkam/)
+For debugging purposes: 
+- [gtkam](http://www.gphoto.org/proj/gtkam/) - A GUI for DSLR cameras that uses gphoto2.
+- [Digitemp_DS9097](https://manpages.ubuntu.com/manpages/bionic/man1/digitemp.1.html) - The USB temperature sensor used for the logging.
 
-Matlab dependencies: [matlab-gphoto](https://gitlab.com/astrophotography/matlab-gphoto/), [matlab process](https://github.com/farhi/matlab-process)
+Matlab dependencies:
+- [matlab-gphoto](https://gitlab.com/astrophotography/matlab-gphoto/)
+- [matlab process](https://github.com/farhi/matlab-process)
 
-Astronomical cameras: [LAST_QHYccd](https://github.com/EastEriq/LAST_QHYccd)
+Astronomical cameras: 
+- [LAST_QHYccd](https://github.com/EastEriq/LAST_QHYccd)
+- [AstroPack](https://github.com/EranOfek/AstroPack/tree/dev1)
 
 #### Auto installation:
 
@@ -97,27 +104,30 @@ Disconnection will take a few seconds, it will close the liveview window and cle
 
 | Property name | Summary | Default value | Visible?
 | --- | --- | --- | --- |
-| ExpTime | The exposure time of the camera, note that this might be rounded to the closest available value, as not all values are possible | 8 | Yes |
-| Delay | Time delay in seconds between the start of each capture | 12 | Yes |
-| CameraType | The type of camera used. Can only be "DSLR" or "ASTRO", multiple inputs are supported, but they will return only one of these two values | "DSLR" | Yes |
-| ImagePath | The parent directory where the images will be saved | '/home/ocs/skycam/' | Yes |
-| Temperature | Debug property, shows the temperature of the sensor, if connected | ~ | Only if found |
-| CameraRes | The camera serial resource, is used for both astronomical as DSLR cameras, but it will store different resources | Readonly | Yes |
-| TemperatureLogger | The temperature logger serial resource, if found | Readonly | No |
+| ExpTime | The exposure time of the camera, note that this will be rounded to the closest available value, as not all values are possible. | 8 | Yes |
+| Delay | Time delay in seconds between the start of each capture. | 12 | Yes |
+| CameraType | The type of camera used. Can only be "DSLR" or "ASTRO", multiple inputs are supported, but they will return only one of these two values. | "DSLR" | Yes |
+| ImagePath | The parent directory where the images will be saved. | '/home/ocs/skycam/' | Yes |
+| Temperature | Debug property, shows the temperature of the sensor, if connected. | ~ | Only if 'Found' |
+| CameraTemp | ASTRO - Only: The internal temperature of the camera. | Readonly | Only in ASTRO mode |
+| CameraRes | The camera serial resource, is used for both astronomical as DSLR cameras, but it will store different resources. | Readonly | Yes |
+| SensorType | Debug property, the type of temperature logger that you want to connect (Arduino / Digitemp). | 'Digitemp' | If assigned a value |
+| TemperatureLogger | The temperature logger serial resource, if found. Serial resource for arduino and bash script process for Digitemp. | Readonly | No |
 | DataDir | AstroPack: The child directory where the images will be saved, a subdirectory of ImagePath. | Readonly | No |
-| FileCheck | In DSLR mode: The file organizing script process. <br /> In ASTRO mode: The timer object that calls TakeExposure | Readonly | No |
-| ExpTimesData | DSLR - Only: The data table of the possible exposure times that is read from the camera's settings | Readonly | No | 
-| InitialTemp | Debug property, the initial temperature of the sensor (if found). Used for comparison and to avoid overheating | Readonly | No |
-| Found | Debug property, indicates if a temperature logger was found | 0 (false) | No |
+| FileCheck | In DSLR mode: The file organizing script process. <br /> In ASTRO mode: The timer object that calls TakeExposure. | Readonly | No |
+| ExpTimesData | DSLR - Only: The data table of the possible exposure times that is read from the camera's settings. | Readonly | No | 
+| InitialTemp | Debug property, the initial temperature of the sensor (if found). Used for comparison and to avoid overheating. | Readonly | No |
+| Found | Debug property, indicates if a temperature logger was found. | 0 (false) | No |
 
 </details>
 
 <details><summary> Debug methods </summary>
 
-| Method name | Summary | Properties | 
-| --- | --- | --- |
-| connectSensor | Used to connect the Arduino temperature sensor with serialport, automatically detects port unless provided. This method is called by the 'connect' method automatically and detects if there is a sensor connected | Port, Baud - The serial port and baud rate of the Arduino |
-| imageTimer | Detects when a new file has been saved on disk. Blocks Matlab, and can only be interrupted with Ctrl + C | |
+| Method name | Summary | Properties | Optional inputs |
+| --- | --- | --- | --- |
+| connectSensor | Used to connect the Arduino or Digitemp_DS9097 temperature sensors with serialport (Arduino) or bash (Digitemp), automatically detects port unless provided. This method is no longer automatically called due to performance reasons. | Found, SesnorType, InitialTemp, TemperatureLogger | Port, Baud - The serial port and baud rate of the Arduino |
+| imageTimer | Detects when a new file has been saved on disk. Blocks Matlab, and can only be interrupted with Ctrl + C | ImagePath | |
+| ~~logTemperature~~ | Uses Digitemp_DS9097 USB temperature sensor to log temperatures (instead of arduino) every 2 seconds (can be changed). Creates a file in the ImagePath directory where it saves a timetable with the temperature data. **Cut into 'connectSensor'** - Is still in 'old' folder | SensorType, ImagePath, TemperatureLogger | |
 
 </details>
 
