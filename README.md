@@ -9,7 +9,7 @@ System dependencies:
 
 For debugging purposes: 
 - [gtkam](http://www.gphoto.org/proj/gtkam/) - A GUI for DSLR cameras that uses gphoto2.
-- [Digitemp_DS9097](https://www.digitemp.com/) - The USB temperature sensor used for the logging.
+- [Digitemp_DS9097](https://manpages.ubuntu.com/manpages/bionic/man1/digitemp.1.html) - The USB temperature sensor used for the logging.
 
 Matlab dependencies:
 - [matlab-gphoto](https://gitlab.com/astrophotography/matlab-gphoto/)
@@ -104,14 +104,14 @@ Disconnection will take a few seconds, it will close the liveview window and cle
 
 | Property name | Summary | Default value | Visible?
 | --- | --- | --- | --- |
-| ExpTime | The exposure time of the camera, note that this might be rounded to the closest available value, as not all values are possible. | 8 | Yes |
+| ExpTime | The exposure time of the camera, note that this will be rounded to the closest available value, as not all values are possible. | 8 | Yes |
 | Delay | Time delay in seconds between the start of each capture. | 12 | Yes |
 | CameraType | The type of camera used. Can only be "DSLR" or "ASTRO", multiple inputs are supported, but they will return only one of these two values. | "DSLR" | Yes |
 | ImagePath | The parent directory where the images will be saved. | '/home/ocs/skycam/' | Yes |
-| Temperature | Debug property, shows the temperature of the sensor, if connected. | ~ | Only if found |
+| Temperature | Debug property, shows the temperature of the sensor, if connected. | ~ | Only if 'Found' |
 | CameraTemp | ASTRO - Only: The internal temperature of the camera. | Readonly | Only in ASTRO mode |
 | CameraRes | The camera serial resource, is used for both astronomical as DSLR cameras, but it will store different resources. | Readonly | Yes |
-| SensorType | Debug property, the type of temperature logger that is found and connected (Arduino / Digitemp). | Readonly | No |
+| SensorType | Debug property, the type of temperature logger that you want to connect (Arduino / Digitemp). | 'Digitemp' | If assigned a value |
 | TemperatureLogger | The temperature logger serial resource, if found. Serial resource for arduino and bash script process for Digitemp. | Readonly | No |
 | DataDir | AstroPack: The child directory where the images will be saved, a subdirectory of ImagePath. | Readonly | No |
 | FileCheck | In DSLR mode: The file organizing script process. <br /> In ASTRO mode: The timer object that calls TakeExposure. | Readonly | No |
@@ -123,11 +123,11 @@ Disconnection will take a few seconds, it will close the liveview window and cle
 
 <details><summary> Debug methods </summary>
 
-| Method name | Summary | Properties | 
-| --- | --- | --- |
-| connectSensor | Used to connect the Arduino or Digitemp_DS9097 temperature sensors with serialport (Arduino) or bash (Digitemp), automatically detects port unless provided. This method is called by the 'connect' method automatically and detects if there is a sensor connected | Port, Baud - The serial port and baud rate of the Arduino |
-| imageTimer | Detects when a new file has been saved on disk. Blocks Matlab, and can only be interrupted with Ctrl + C | |
-| logTemperature | Uses Digitemp_DS9097 USB temperature sensor to log temperatures (instead of arduino) every 2 seconds (can be changed). Creates a file in the ImagePath directory where it saves a timetable with the temperature data. | |
+| Method name | Summary | Properties | Optional inputs |
+| --- | --- | --- | --- |
+| connectSensor | Used to connect the Arduino or Digitemp_DS9097 temperature sensors with serialport (Arduino) or bash (Digitemp), automatically detects port unless provided. This method is no longer automatically called due to performance reasons. | Found, SesnorType, InitialTemp, TemperatureLogger | Port, Baud - The serial port and baud rate of the Arduino |
+| imageTimer | Detects when a new file has been saved on disk. Blocks Matlab, and can only be interrupted with Ctrl + C | ImagePath | |
+| ~~logTemperature~~ | Uses Digitemp_DS9097 USB temperature sensor to log temperatures (instead of arduino) every 2 seconds (can be changed). Creates a file in the ImagePath directory where it saves a timetable with the temperature data. **Cut into 'connectSensor'** - Is still in 'old' folder | SensorType, ImagePath, TemperatureLogger | |
 
 </details>
 
