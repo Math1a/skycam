@@ -30,4 +30,6 @@ if ~isempty(F.FileCheck) % Check if the property exists
     F.FileCheck = [];
 end
 
+F.Connected = 1; % Notify the class that the camera is no longer capturing
+
 end

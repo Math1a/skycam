@@ -46,4 +46,6 @@ if ~isempty(F.FileCheck) % Check if the property exists
     F.FileCheck = [];
 end
 
+F.Connected = 0; % Notify the class that there is no camera connected
+
 end

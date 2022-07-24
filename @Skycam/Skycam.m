@@ -40,6 +40,7 @@ classdef Skycam < obs.LAST_Handle
         ExpTimesData        % DSLR: The possible exposure times data table
         InitialTemp         % Debug: The initial temperature is recorded to avoid overheating
         Found = 0           % Whether or not an arduino temperature sensor is connected
+        Connected = 0       % The connection status of the camera 0 for not connected, 1 for connected, and 2 for started
     end
     
     methods

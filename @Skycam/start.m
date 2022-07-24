@@ -2,6 +2,13 @@
 % camera, regardless of its type
 
 function F = start(F)
+
+if F.Connected == 0
+    error("No camera connected! Use 'connect' function first!")
+elseif F.Connected == 2
+    error("Image capture already running!")
+end
+
 %% ASTRO
 if F.CameraType == "ASTRO"
     
@@ -69,5 +76,7 @@ elseif F.CameraType == "DSLR"
 else
     error("Invalid camera type!")
 end
+
+F.Connected = 2; % Notify the class that the camera is capturing
 
 end

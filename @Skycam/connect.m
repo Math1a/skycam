@@ -22,6 +22,10 @@ end
 
 addpath(wd);
 
+if F.Connected ~= 0
+    error("Camera is already connected!")
+end
+
 % If statement for different camera types, the two different cameras have
 % different connection and disconnection processes.
 if F.CameraType == "ASTRO"
@@ -113,5 +117,7 @@ elseif F.CameraType == "DSLR"
 else
     error("Invalid camera type!")
 end
+
+F.Connected = 1; % Notify the class that a camera is connected
 
 end
