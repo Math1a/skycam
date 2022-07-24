@@ -2,7 +2,7 @@
 % camers, as well as to check and connect the Arduino temperature sensor.
 
 function F = connect(F,Port)
-%% Temperature
+%% Setup
 % Try to connect the temperature sensor and log its temperatures
 % F.connectSensor
 % if F.Found
@@ -11,6 +11,16 @@ function F = connect(F,Port)
 % else
 %     disp("No temperature data logger detected. Temperature will not be monitored")
 % end
+
+% Gphoto will save the images to the current directory, so we change it to
+% the desired image path:
+wd = pwd; % Save the current directory (to return later)
+% Check if the image path directory exists, if not, create it
+if ~exist(F.ImagePath, 'dir')
+    mkdir(F.ImagePath);
+end
+
+addpath(wd);
 
 % If statement for different camera types, the two different cameras have
 % different connection and disconnection processes.
@@ -34,17 +44,7 @@ if F.CameraType == "ASTRO"
     F.CameraRes = C; % Save the camera object in the class
     
 elseif F.CameraType == "DSLR"
-    %% DSLR
-    % Gphoto will save the images to the current directory, so we change it to
-    % the desired image path:
-    wd = pwd; % Save the current directory (to return later)
-    % Check if the image path directory exists, if not, create it
-    if ~exist(F.ImagePath, 'dir')
-        mkdir(F.ImagePath);
-    end
-    
-    addpath(wd);
-    
+    %% DSLR  
     % Check if 'AstroPack' is present (LAST)
     if exist('ImagePath', 'class')
         % Create the data direcotry
