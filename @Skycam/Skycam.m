@@ -15,7 +15,7 @@
 % shutdown can cause the camera to get stuck.
 % If the camera does get stuck, restart it (physically).
 
-classdef Skycam < obs.LAST_Handle
+classdef Skycam < handle
     
     properties
         ExpTime = 8         % Exposure time, in seconds
@@ -60,10 +60,10 @@ classdef Skycam < obs.LAST_Handle
             if F.Found 
                 if F.SensorType == "Digitemp"
                     % Read trough system digitemp 
-                    [~, resp] = system("digitemp_DS9097 -q -t 0 -c .digitemprc");
-                    % Find where C degrees are and save them
-                    index = strfind(resp, "C:");
-                    d = resp(index + 3: index + 7);
+                    cmd = strsplit(F.TemperatureLogger.command, '-l'); % Get the logger command
+                    path = cmd{2}(2:end); % Extract the filename from the logger
+                    temps = importdata(path); % Read the temperature data from the log file
+                    d = temps(end-1,end); % The last temperature is it the last coloumn and the last row
                 else % Arduino
                     F.TemperatureLogger.flush % Clear the serial port
                     d = F.TemperatureLogger.readline; % Read the last line from the serial port
