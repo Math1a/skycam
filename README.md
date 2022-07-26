@@ -75,6 +75,7 @@ P.start
 For DSLR cameras:
 - A bash script will run, organizing all the images in the image path directory.
 - A plot window will open with a live view of the camera, and the camera will continue capturing until it will be disconnected.
+- If you don't want the plot window, you can change the figure in 'matlab-gphoto' submodule, inside the gphoto.plot function file to: "(,'visible','off')"
 - If astropack is present, the images will be saved with (AstroPack's) 'ImagePath''s standard, else, it will be saved just in 'P.ImagePath'.
 
 For Astronimical cameras:
@@ -126,7 +127,7 @@ Disconnection will take a few seconds, it will close the liveview window and cle
 | Method name | Summary | Properties | Optional inputs |
 | --- | --- | --- | --- |
 | connectSensor | Used to connect the Arduino or Digitemp_DS9097 temperature sensors with serialport (Arduino) or bash (Digitemp), automatically detects port unless provided. This method is no longer automatically called due to performance reasons. | Found, SesnorType, InitialTemp, TemperatureLogger | Port, Baud - The serial port and baud rate of the Arduino |
-| imageTimer | Detects when a new file has been saved on disk. Blocks Matlab, and can only be interrupted with Ctrl + C | ImagePath | |
+| imageTimer | Detects when a new file has been saved on disk. Blocks Matlab, and can only be interrupted with Ctrl + C | DataDir | |
 | ~~logTemperature~~ | Uses Digitemp_DS9097 USB temperature sensor to log temperatures (instead of arduino) every 2 seconds (can be changed). Creates a file in the ImagePath directory where it saves a timetable with the temperature data. **Cut into 'connectSensor'** - Is still in 'old' folder | SensorType, ImagePath, TemperatureLogger | |
 
 </details>
