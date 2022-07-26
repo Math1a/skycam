@@ -9,7 +9,7 @@ function F = imageTimer(F)
 
 wd = pwd; % Save the current directory (to return later)
 % Set the working directory, this is where images will be saved
-cd(F.ImagePath);
+cd(F.DataDir);
 addpath(wd);
 
 % Wait untill a new file is created (meaning the script is on)

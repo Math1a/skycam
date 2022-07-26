@@ -52,7 +52,11 @@ elseif F.CameraType == "DSLR"
     F.CameraRes.set('bulb', 0) % Bulb has to be off to change exposure time
     F.CameraRes.set('shutterspeed', idx-1) % Set the shutter speed (exposure time) index is different than the table
     %F.CameraRes.set('f_number', 0) % Set the f number to the lowest the camera is capable of
-    
+    %F.CameraRes.set('iso') % Set the ISO number
+    F.CameraRes.set('autoiso', 0) % Set autoiso to on
+    % Consider changing to a more general approach
+    F.CameraRes.set('imagequality', 7) % Set image quality to RAW
+
     % plot starts liveview. I have no idea why, but without plotting, the
     % images wouldn't save (and everything gets stuck)
     F.CameraRes.plot
