@@ -9,6 +9,7 @@ System dependencies:
 
 For debugging purposes: 
 - [gtkam](http://www.gphoto.org/proj/gtkam/) - A GUI for DSLR cameras that uses gphoto2.
+- [Geqqie](https://www.geeqie.org/) - A lightweight image viewer that handles raw (NEF) files, recommended for image viewing.
 - [Digitemp_DS9097](https://manpages.ubuntu.com/manpages/bionic/man1/digitemp.1.html) - The USB temperature sensor used for the logging.
 
 Matlab dependencies:
