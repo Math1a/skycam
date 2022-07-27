@@ -3,7 +3,7 @@
 # Procces invalid files (that are not named)
 # Set the delimiter
 IFS=$'\n'
-OLDFILES=($(find -maxdepth 1 -name "capt**.nef" -print))
+OLDFILES=($(find -maxdepth 1 -name "capt**." -print))
 # Make a new directory for old images, and put them in
 if test ${#OLDFILES[@]} -gt 0; then
 	NEWDIR=OldImages_$(printf '%(%Y-%m-%d_%H:%M:%S)T\n' -1)
@@ -36,8 +36,14 @@ while true; do
     done
 	
 ((LOOP++))
+# Flip the newly found image
+dcraw -4 -t 3 $IMFILE
+# Get the flipped image name
+FLIPPED=($(find -maxdepth 1 -name "capt**.ppm" -print))
+# Delete the old image
+rm -f $IMFILE
 # Rename the newly found file
-mv -f $IMFILE "./LAST.dslr1.in_$(date +%Y%m%d.%H%M%S.%3N)_clear__$(printf %03d $LOOP)___sci_raw_Image_1.nef"
+mv -f $FLIPPED "./LAST.dslr1.in_$(date +%Y%m%d.%H%M%S.%3N)_clear__$(printf %03d $LOOP)___sci_raw_Image_1.ppm"
 
 done
 
