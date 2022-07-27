@@ -19,6 +19,7 @@ classdef Skycam < handle
     
     properties
         ExpTime = 8         % Exposure time, in seconds
+        F_Number = []       % F - Number, will ignore Exposure time, only for DSLR
         Delay = 12          % Delay between each capture, only for DSLR
         CameraType = "DSLR" % The type of camera used (DSLR/ASTRO)
         % The directory where the images will be saved (and the bash script will run)
@@ -27,10 +28,11 @@ classdef Skycam < handle
     end
     
     properties(GetAccess = public, SetAccess = private)
+        Exposure_Mode = "ExpTime"   % The exposure mode: ExpTime/F_Number
         Temperature % Debug: the reading of the Arduino temperature sensor
         CameraTemp  % The temperature of the camera, only for astronimical cameras that support it
         CameraRes   % The gphoto serial resource
-        SensorType = "Digitemp" % The type of temperature sensor
+        SensorType = "Digitemp"     % The type of temperature sensor
     end
     
     properties(Hidden, SetAccess = private)
@@ -57,9 +59,9 @@ classdef Skycam < handle
         
         % Get the temperature whenever it is requested
         function d = get.Temperature(F)
-            if F.Found 
+            if F.Found
                 if F.SensorType == "Digitemp"
-                    % Read trough system digitemp 
+                    % Read trough system digitemp
                     cmd = strsplit(F.TemperatureLogger.command, '-l'); % Get the logger command
                     path = cmd{2}(2:end); % Extract the filename from the logger
                     temps = importdata(path); % Read the temperature data from the log file
@@ -119,6 +121,8 @@ classdef Skycam < handle
             if ~isempty(F.FileCheck) % Check if the camera is already running
                 error("Cannot change exposure time while camera is running!" + ...
                     newline + "Use disconnect and then change the exposure time")
+            elseif isempty(ExpTime)
+                F.ExpTime = ExpTime;
             elseif ExpTime < 0
                 error("Exposure time cannot be less than 0!")
             elseif ExpTime > F.Delay
@@ -133,25 +137,35 @@ classdef Skycam < handle
                 % New way, more reliable as it asks the camera every time,
                 % but it is slower and also can't check while the camera is
                 % connected
-                [result, raw] = system("gphoto2 --get-config=shutterspeed");
-                
-                if result ~= 0
-                    error("Error communicating with camera! Check if busy")
-                end
-                out = splitlines(raw);
-                choices = string.empty;
-                for s = 1:length(out)
-                    str = string(out{s});
-                    if contains(str,"Choice:")
-                        str = erase(str, "Choice: ");
-                        str = erase(str, "s");
-                        choices(end+1) = str;
+                if isempty(F.ExpTimesData) || F.Exposure_Mode ~= "F_ExpTime"
+                    [result, raw] = system("gphoto2 --get-config=shutterspeed");
+                    
+                    if result ~= 0
+                        error("Error communicating with camera! Check if busy")
                     end
-                end
-                data = [];
-                for s = 1:length(choices)
-                    num = erase(choices(s), strcat(string(s-1) + ' '));
-                    data(end+1) = num;
+                    % Exposure times found!
+                    % Set the exposure mode
+                    F.Exposure_Mode = "ExpTime";
+                    F.F_Number = [];
+                    % Format the output and find closest value
+                    out = splitlines(raw);
+                    choices = string.empty;
+                    for s = 1:length(out)
+                        str = string(out{s});
+                        if contains(str,"Choice:")
+                            str = erase(str, "Choice: ");
+                            str = erase(str, "s");
+                            choices(end+1) = str;
+                        end
+                    end
+                    data = [];
+                    for s = 1:length(choices)
+                        num = erase(choices(s), strcat(string(s-1) + ' '));
+                        data(end+1) = num;
+                    end
+                    F.ExpTimesData = data;
+                elseif F.Exposure_Mode == "F_ExpTime"
+                    data = F.ExpTimesData;
                 end
                 % Check what is the closest value
                 [val,idx] = min(abs(data-ExpTime));
@@ -159,6 +173,52 @@ classdef Skycam < handle
                 F.ExpTime = data(idx);
             elseif F.CameraType == "ASTRO"
                 F.ExpTime = ExpTime;
+            else
+                error("Invalid camera type!")
+            end
+        end
+        
+        function set.F_Number(F, F_num)
+            if ~isempty(F.FileCheck) % Check if the camera is already running
+                error("Cannot change F - Number while camera is running!" + ...
+                    newline + "Use disconnect and then change the F - Number")
+            elseif isempty(F_num)
+                F.F_Number = F_num;
+            elseif F.CameraType == "DSLR"
+                if isempty(F.ExpTimesData) || F.Exposure_Mode ~= 'F_Number'
+                    % Get a list of possible F - number values
+                    [result, raw] = system('gphoto2 --get-config=f-number');
+                    
+                    if result ~= 0
+                        error("Error communicating with camera! Check if busy")
+                    end
+                    % F_Numbers found!
+                    % Set the exposure mode
+                    F.Exposure_Mode = "F_Number";
+                    F.ExpTime = [];
+                    % Make a list from the output
+                    out = splitlines(raw);
+                    choices = string.empty;
+                    for s = 1:length(out)
+                        str = string(out{s});
+                        if contains(str,"Choice:")
+                            str = erase(str, "Choice: ");
+                            str = erase(str, "f/");
+                            choices(end+1) = str;
+                        end
+                    end
+                    data = [];
+                    for s = 1:length(choices)
+                        num = erase(choices(s), strcat(string(s-1) + ' '));
+                        data(end+1) = num;
+                    end
+                    F.ExpTimesData = data;
+                elseif F.Exposure_Mode == "F_Number"
+                    data = F.ExpTimesData;
+                end
+                % Check what is the closest value
+                [val,idx] = min(abs(data-F_num));
+                F.F_Number = data(idx);
             else
                 error("Invalid camera type!")
             end

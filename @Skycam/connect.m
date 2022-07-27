@@ -48,7 +48,7 @@ if F.CameraType == "ASTRO"
     F.CameraRes = C; % Save the camera object in the class
     
 elseif F.CameraType == "DSLR"
-    %% DSLR  
+    %% DSLR
     % Check if 'AstroPack' is present (LAST)
     if exist('ImagePath', 'class')
         % Create the data direcotry
@@ -61,7 +61,12 @@ elseif F.CameraType == "DSLR"
     
     % New way of getting the exposure times, ask the camera, only works
     % when not connected
-    [result, raw] = system("gphoto2 --get-config=shutterspeed");
+    if F.Exposure_Mode == "ExpTime"
+        [result, raw] = system("gphoto2 --get-config=shutterspeed");
+    elseif F.Exposure_Mode == "F_Number"
+        [result, raw] = system("gphoto2 --get-config=f-number");
+    end
+    
     if result ~= 0
         cd(wd) % return to the previous directory
         error("Error communicating with camera! Check if busy")
@@ -73,6 +78,7 @@ elseif F.CameraType == "DSLR"
         if contains(str,"Choice:")
             str = erase(str, "Choice: ");
             str = erase(str, "s");
+            str = erase(str, "f/");
             choices(end+1) = str;
         end
     end
