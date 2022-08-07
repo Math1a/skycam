@@ -36,8 +36,15 @@ while true; do
     done
 	
 ((LOOP++))
+mv -f $IMFILE "./LAST.dslr1.in_$(date +%Y%m%d.%H%M%S.%3N)_clear__$(printf %03d $LOOP)___sci_raw_Image_1.raw"
+# Flip the newly found image
+#dcraw -4 -t 3 -o 0 -j $IMFILE
+# Get the flipped image name
+#FLIPPED=($(find -maxdepth 1 -name "capt**.ppm" -print))
+# Delete the old image
+#rm -f $IMFILE
 # Rename the newly found file
-mv -f $IMFILE "./LAST.dslr1.in_$(date +%Y%m%d.%H%M%S.%3N)_clear__$(printf %03d $LOOP)___sci_raw_Image_1.nef"
+#mv -f $FLIPPED "./LAST.dslr1.in_$(date +%Y%m%d.%H%M%S.%3N)_clear__$(printf %03d $LOOP)___sci_raw_Image_1.ppm"
 
 done
 

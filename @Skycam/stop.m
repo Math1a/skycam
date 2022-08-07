@@ -24,10 +24,13 @@ else
     error("Invalid camera type!")
 end
 
+pause(F.Delay) % Let the last images save
 if ~isempty(F.FileCheck) % Check if the property exists
     F.FileCheck.stop; % Stop The organizer/timer function
     F.FileCheck.delete;
     F.FileCheck = [];
 end
+
+F.Connected = 1; % Notify the class that the camera is no longer capturing
 
 end

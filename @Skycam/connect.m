@@ -2,7 +2,7 @@
 % camers, as well as to check and connect the Arduino temperature sensor.
 
 function F = connect(F,Port)
-%% Temperature
+%% Setup
 % Try to connect the temperature sensor and log its temperatures
 % F.connectSensor
 % if F.Found
@@ -11,6 +11,20 @@ function F = connect(F,Port)
 % else
 %     disp("No temperature data logger detected. Temperature will not be monitored")
 % end
+
+% Gphoto will save the images to the current directory, so we change it to
+% the desired image path:
+wd = pwd; % Save the current directory (to return later)
+% Check if the image path directory exists, if not, create it
+if ~exist(F.ImagePath, 'dir')
+    mkdir(F.ImagePath);
+end
+
+addpath(wd);
+
+if F.Connected ~= 0
+    error("Camera is already connected!")
+end
 
 % If statement for different camera types, the two different cameras have
 % different connection and disconnection processes.
@@ -35,16 +49,6 @@ if F.CameraType == "ASTRO"
     
 elseif F.CameraType == "DSLR"
     %% DSLR
-    % Gphoto will save the images to the current directory, so we change it to
-    % the desired image path:
-    wd = pwd; % Save the current directory (to return later)
-    % Check if the image path directory exists, if not, create it
-    if ~exist(F.ImagePath, 'dir')
-        mkdir(F.ImagePath);
-    end
-    
-    addpath(wd);
-    
     % Check if 'AstroPack' is present (LAST)
     if exist('ImagePath', 'class')
         % Create the data direcotry
@@ -57,7 +61,12 @@ elseif F.CameraType == "DSLR"
     
     % New way of getting the exposure times, ask the camera, only works
     % when not connected
-    [result, raw] = system("gphoto2 --get-config=shutterspeed");
+    if F.Exposure_Mode == "ExpTime"
+        [result, raw] = system("gphoto2 --get-config=shutterspeed");
+    elseif F.Exposure_Mode == "F_Number"
+        [result, raw] = system("gphoto2 --get-config=f-number");
+    end
+    
     if result ~= 0
         cd(wd) % return to the previous directory
         error("Error communicating with camera! Check if busy")
@@ -69,6 +78,7 @@ elseif F.CameraType == "DSLR"
         if contains(str,"Choice:")
             str = erase(str, "Choice: ");
             str = erase(str, "s");
+            str = erase(str, "f/");
             choices(end+1) = str;
         end
     end
@@ -113,5 +123,7 @@ elseif F.CameraType == "DSLR"
 else
     error("Invalid camera type!")
 end
+
+F.Connected = 1; % Notify the class that a camera is connected
 
 end

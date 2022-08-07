@@ -2,6 +2,13 @@
 % camera, regardless of its type
 
 function F = start(F)
+
+if F.Connected == 0
+    error("No camera connected! Use 'connect' function first!")
+elseif F.Connected == 2
+    error("Image capture already running!")
+end
+
 %% ASTRO
 if F.CameraType == "ASTRO"
     
@@ -41,10 +48,19 @@ elseif F.CameraType == "DSLR"
     % Old way of getting exposure times: with text file
     % Set the exposure time to the closest available value
     %data = importdata(classdir + "/bin/exptimes.txt"); % Import the exposure times table
-    [val,idx] = min(abs(F.ExpTimesData-F.ExpTime)); % Check what is the closest value
-    F.CameraRes.set('bulb', 0) % Bulb has to be off to change exposure time
-    F.CameraRes.set('shutterspeed', idx-1) % Set the shutter speed (exposure time) index is different than the table
+    if F.Exposure_Mode == "ExpTime"
+        [val,idx] = min(abs(F.ExpTimesData-F.ExpTime)); % Check what is the closest value
+        F.CameraRes.set('bulb', 0) % Bulb has to be off to change exposure time
+        F.CameraRes.set('shutterspeed', idx-1) % Set the shutter speed (exposure time) index is different than the table
+    elseif F.Exposure_Mode == "F_Number"
+        [val,idx] = min(abs(F.ExpTimesData-F.F_Number)); % Check what is the closest value
+        F.CameraRes.set('f-number', idx-1) % Set the shutter speed (exposure time) index is different than the table
+    end
     %F.CameraRes.set('f_number', 0) % Set the f number to the lowest the camera is capable of
+    %F.CameraRes.set('iso') % Set the ISO number
+    F.CameraRes.set('autoiso', 0) % Set autoiso to on
+    % Consider changing to a more general approach
+    F.CameraRes.set('imagequality', 7) % Set image quality to RAW
     
     % plot starts liveview. I have no idea why, but without plotting, the
     % images wouldn't save (and everything gets stuck)
@@ -69,5 +85,7 @@ elseif F.CameraType == "DSLR"
 else
     error("Invalid camera type!")
 end
+
+F.Connected = 2; % Notify the class that the camera is capturing
 
 end
