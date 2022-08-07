@@ -51,6 +51,11 @@ Exposure time, in seconds (default 8):
 P.ExpTime = x
 ```
 
+*For DSLR cameras* we can also set the F - Number (Deafult 1.4):
+```matlab
+P.F_Number = x
+```
+
 Time delay between each capture, in seconds from the start of the previous capture (default 12):
 ```matlab
 P.Delay = x
@@ -107,19 +112,22 @@ Disconnection will take a few seconds, it will close the liveview window and cle
 | Property name | Summary | Default value | Visible?
 | --- | --- | --- | --- |
 | ExpTime | The exposure time of the camera, note that this will be rounded to the closest available value, as not all values are possible. | 8 | Yes |
+| F_Number | *DSLR - Only:* The F - Number of the camera, note that this will be rounded to the closest available value, as not all values are possible. | [Empty] | Yes |
 | Delay | Time delay in seconds between the start of each capture. | 12 | Yes |
-| CameraType | The type of camera used. Can only be "DSLR" or "ASTRO", multiple inputs are supported, but they will return only one of these two values. | "DSLR" | Yes |
+| CameraType | The type of camera used. Can only be 'DSLR' or 'ASTRO', multiple inputs are accepted, but they will return only one of these two values. | 'DSLR' | Yes |
 | ImagePath | The parent directory where the images will be saved. | '/home/ocs/skycam/' | Yes |
-| Temperature | Debug property, shows the temperature of the sensor, if connected. | ~ | Only if 'Found' |
-| CameraTemp | ASTRO - Only: The internal temperature of the camera. | Readonly | Only in ASTRO mode |
+| Exposure_Mode | *DSLR - Only:* The camera exposure preference, can be ExpTime or F_Number. Note that this is readonly and you should set the individual properties. | 'ExpTime' | Yes |
+| Temperature | *Debug property:* Shows the temperature of the sensor, if connected. | ~ | Only if 'Found' |
+| CameraTemp | *ASTRO - Only:* The internal temperature of the camera. | Readonly | Only in ASTRO mode |
 | CameraRes | The camera serial resource, is used for both astronomical as DSLR cameras, but it will store different resources. | Readonly | Yes |
-| SensorType | Debug property, the type of temperature logger that you want to connect (Arduino / Digitemp). | 'Digitemp' | If assigned a value |
+| SensorType | *Debug property:* the type of temperature logger that you want to connect (Arduino / Digitemp). | 'Digitemp' | If assigned a value |
 | TemperatureLogger | The temperature logger serial resource, if found. Serial resource for arduino and bash script process for Digitemp. | Readonly | No |
-| DataDir | AstroPack: The child directory where the images will be saved, a subdirectory of ImagePath. | Readonly | No |
-| FileCheck | In DSLR mode: The file organizing script process. <br /> In ASTRO mode: The timer object that calls TakeExposure. | Readonly | No |
-| ExpTimesData | DSLR - Only: The data table of the possible exposure times that is read from the camera's settings. | Readonly | No | 
-| InitialTemp | Debug property, the initial temperature of the sensor (if found). Used for comparison and to avoid overheating. | Readonly | No |
-| Found | Debug property, indicates if a temperature logger was found. | 0 (false) | No |
+| DataDir | *AstroPack - Only:* The child directory where the images will be saved, a subdirectory of ImagePath. | Readonly | No |
+| FileCheck | *In DSLR mode:* The file organizing script process. <br /> *In ASTRO mode:* The timer object that calls TakeExposure. | Readonly | No |
+| ExpTimesData | *DSLR - Only:* The data table of the possible exposure times that is read from the camera's settings. | Readonly | No | 
+| InitialTemp | *Debug property:* the initial temperature of the sensor (if found). Used for comparison and to avoid overheating. | Readonly | No |
+| Found | *Debug property:* indicates if a temperature logger was found. | 0 (false) | No |
+| Connected | The connection status of the camera: 0 for not connected, 1 for connected, and 2 for started. | 0 | No |
 
 </details>
 
@@ -127,9 +135,10 @@ Disconnection will take a few seconds, it will close the liveview window and cle
 
 | Method name | Summary | Properties | Optional inputs |
 | --- | --- | --- | --- |
-| connectSensor | Used to connect the Arduino or Digitemp_DS9097 temperature sensors with serialport (Arduino) or bash (Digitemp), automatically detects port unless provided. This method is no longer automatically called due to performance reasons. | Found, SesnorType, InitialTemp, TemperatureLogger | Port, Baud - The serial port and baud rate of the Arduino |
-| imageTimer | Detects when a new file has been saved on disk. Blocks Matlab, and can only be interrupted with Ctrl + C | DataDir | |
-| ~~logTemperature~~ | Uses Digitemp_DS9097 USB temperature sensor to log temperatures (instead of arduino) every 2 seconds (can be changed). Creates a file in the ImagePath directory where it saves a timetable with the temperature data. **Cut into 'connectSensor'** - Is still in 'old' folder | SensorType, ImagePath, TemperatureLogger | |
+| connectSensor | Used to connect the Arduino or Digitemp_DS9097 temperature sensors with serialport (Arduino) or bash (Digitemp), automatically detects port unless provided. This method is no longer automatically called due to performance reasons. <br /> *For Digitemp sensors:* The sensor will write a log file with the temperatures every 2 seconds. It will be located under the 'ImagePath' folder. | Found, SesnorType, InitialTemp, TemperatureLogger, ImagePath | Port, Baud - The serial port and baud rate of the Arduino |
+| stopLogging | *Digitemp - Only:* Used to disconnect and kill the Digitemp temperature sensor process and stop writing to the log file. | Found, SensorType, TemperatureLogger | |
+| imageTimer | Detects when a new file has been saved on disk. Blocks Matlab, and can only be interrupted with Ctrl + C. | DataDir | |
+| ~~logTemperature~~ | Uses Digitemp_DS9097 USB temperature sensor to log temperatures (instead of arduino) every 2 seconds (can be changed). Creates a file in the ImagePath directory where it saves a timetable with the temperature data. **Cut into 'connectSensor'** - Is still in 'old' folder. | SensorType, ImagePath, TemperatureLogger | |
 
 </details>
 
