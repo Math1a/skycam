@@ -162,6 +162,8 @@ classdef Skycam < handle
                         data(end+1) = num;
                     end
                     F.ExpTimesData = data;
+                else
+                    data = F.ExpTimesData;
                 end
                 % Check what is the closest value
                 [val,idx] = min(abs(data-ExpTime));
@@ -207,6 +209,8 @@ classdef Skycam < handle
                         data(end+1) = num;
                     end
                     F.FNumData = data;
+                else
+                    data = F.FNumData;
                 end
                 % Check what is the closest value
                 [val,idx] = min(abs(data-F_num));
