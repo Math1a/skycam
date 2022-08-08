@@ -61,33 +61,16 @@ elseif F.CameraType == "DSLR"
     
     % New way of getting the exposure times, ask the camera, only works
     % when not connected
-    if F.Exposure_Mode == "ExpTime"
-        [result, raw] = system("gphoto2 --get-config=shutterspeed");
-    elseif F.Exposure_Mode == "F_Number"
-        [result, raw] = system("gphoto2 --get-config=f-number");
-    end
+    [result1, exp] = system("gphoto2 --get-config=shutterspeed");
+    [result2, fnum] = system("gphoto2 --get-config=f-number");
     
-    if result ~= 0
+    if result1 ~= 0 && result2 ~= 0
         cd(wd) % return to the previous directory
         error("Error communicating with camera! Check if busy")
     end
-    out = splitlines(raw);
-    choices = string.empty;
-    for s = 1:length(out)
-        str = string(out{s});
-        if contains(str,"Choice:")
-            str = erase(str, "Choice: ");
-            str = erase(str, "s");
-            str = erase(str, "f/");
-            choices(end+1) = str;
-        end
-    end
-    data = [];
-    for s = 1:length(choices)
-        num = erase(choices(s), strcat(string(s-1) + ' '));
-        data(end+1) = num;
-    end
-    F.ExpTimesData = data;
+    
+    F.ExpTimesData = parsedata(exp);
+    F.FNumData = parsedata(fnum);
     
     % Initiate the gphoto process, gphoto automatically detects the port if
     % none is given
@@ -126,4 +109,23 @@ end
 
 F.Connected = 1; % Notify the class that a camera is connected
 
+end
+
+function dat = parsedata(raw)
+out = splitlines(raw);
+choices = string.empty;
+for s = 1:length(out)
+    str = string(out{s});
+    if contains(str,"Choice:")
+        str = erase(str, "Choice: ");
+        str = erase(str, "s");
+        str = erase(str, "f/");
+        choices(end+1) = str;
+    end
+end
+dat = [];
+for s = 1:length(choices)
+    num = erase(choices(s), strcat(string(s-1) + ' '));
+    dat(end+1) = num;
+end
 end

@@ -19,7 +19,7 @@ classdef Skycam < handle
     
     properties
         ExpTime = 8         % Exposure time, in seconds
-        F_Number = []       % F - Number, will ignore Exposure time, only for DSLR
+        F_Number = 1.4      % F - Number, will ignore Exposure time, only for DSLR
         Delay = 12          % Delay between each capture, only for DSLR
         CameraType = "DSLR" % The type of camera used (DSLR/ASTRO)
         % The directory where the images will be saved (and the bash script will run)
@@ -28,7 +28,6 @@ classdef Skycam < handle
     end
     
     properties(GetAccess = public, SetAccess = private)
-        Exposure_Mode = "ExpTime"   % The exposure mode: ExpTime/F_Number
         Temperature % Debug: the reading of the Arduino temperature sensor
         CameraTemp  % The temperature of the camera, only for astronimical cameras that support it
         CameraRes   % The gphoto serial resource
@@ -40,6 +39,7 @@ classdef Skycam < handle
         DataDir             % The directory where th gphoto process will run
         FileCheck           % DSLR: The bash script procces that checks for new files OR ASTRO: The timer object that calls TakeExposure
         ExpTimesData        % DSLR: The possible exposure times data table
+        FNumData            % DSLR: The possible F - Number data table
         InitialTemp         % Debug: The initial temperature is recorded to avoid overheating
         Found = 0           % Whether or not an arduino temperature sensor is connected
         Connected = 0       % The connection status of the camera 0 for not connected, 1 for connected, and 2 for started
@@ -137,16 +137,14 @@ classdef Skycam < handle
                 % New way, more reliable as it asks the camera every time,
                 % but it is slower and also can't check while the camera is
                 % connected
-                if isempty(F.ExpTimesData) || F.Exposure_Mode ~= "F_ExpTime"
+                if isempty(F.ExpTimesData)
                     [result, raw] = system("gphoto2 --get-config=shutterspeed");
                     
                     if result ~= 0
                         error("Error communicating with camera! Check if busy")
                     end
                     % Exposure times found!
-                    % Set the exposure mode
-                    F.Exposure_Mode = "ExpTime";
-                    F.F_Number = [];
+
                     % Format the output and find closest value
                     out = splitlines(raw);
                     choices = string.empty;
@@ -164,8 +162,6 @@ classdef Skycam < handle
                         data(end+1) = num;
                     end
                     F.ExpTimesData = data;
-                elseif F.Exposure_Mode == "F_ExpTime"
-                    data = F.ExpTimesData;
                 end
                 % Check what is the closest value
                 [val,idx] = min(abs(data-ExpTime));
@@ -185,7 +181,7 @@ classdef Skycam < handle
             elseif isempty(F_num)
                 F.F_Number = F_num;
             elseif F.CameraType == "DSLR"
-                if isempty(F.ExpTimesData) || F.Exposure_Mode ~= 'F_Number'
+                if isempty(F.FNumData)
                     % Get a list of possible F - number values
                     [result, raw] = system('gphoto2 --get-config=f-number');
                     
@@ -193,9 +189,7 @@ classdef Skycam < handle
                         error("Error communicating with camera! Check if busy")
                     end
                     % F_Numbers found!
-                    % Set the exposure mode
-                    F.Exposure_Mode = "F_Number";
-                    F.ExpTime = [];
+
                     % Make a list from the output
                     out = splitlines(raw);
                     choices = string.empty;
@@ -212,9 +206,7 @@ classdef Skycam < handle
                         num = erase(choices(s), strcat(string(s-1) + ' '));
                         data(end+1) = num;
                     end
-                    F.ExpTimesData = data;
-                elseif F.Exposure_Mode == "F_Number"
-                    data = F.ExpTimesData;
+                    F.FNumData = data;
                 end
                 % Check what is the closest value
                 [val,idx] = min(abs(data-F_num));
