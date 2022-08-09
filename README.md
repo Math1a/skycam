@@ -69,7 +69,6 @@ P.ImagePath = 'x'
 ```matlab
 P.connect
 ```
-- This method will also search if an Arduino temperature sensor is connected.
 
 **To start capturing images, use the 'start' function**
 ```matlab
@@ -116,7 +115,6 @@ Disconnection will take a few seconds, it will close the liveview window and cle
 | Delay | Time delay in seconds between the start of each capture. | 12 | Yes |
 | CameraType | The type of camera used. Can only be 'DSLR' or 'ASTRO', multiple inputs are accepted, but they will return only one of these two values. | 'DSLR' | Yes |
 | ImagePath | The parent directory where the images will be saved. | '/home/ocs/skycam/' | Yes |
-| Exposure_Mode | *DSLR - Only:* The camera exposure preference, can be ExpTime or F_Number. Note that this is readonly and you should set the individual properties. | 'ExpTime' | Yes |
 | Temperature | *Debug property:* Shows the temperature of the sensor, if connected. | ~ | Only if 'Found' |
 | CameraTemp | *ASTRO - Only:* The internal temperature of the camera. | Readonly | Only in ASTRO mode |
 | CameraRes | The camera serial resource, is used for both astronomical as DSLR cameras, but it will store different resources. | Readonly | Yes |
@@ -125,6 +123,7 @@ Disconnection will take a few seconds, it will close the liveview window and cle
 | DataDir | *AstroPack - Only:* The child directory where the images will be saved, a subdirectory of ImagePath. | Readonly | No |
 | FileCheck | *In DSLR mode:* The file organizing script process. <br /> *In ASTRO mode:* The timer object that calls TakeExposure. | Readonly | No |
 | ExpTimesData | *DSLR - Only:* The data table of the possible exposure times that is read from the camera's settings. | Readonly | No | 
+| FNumData | *DSLR - Only:* The data table of the possible F - Numbers that is read from the camera's settings. | Readonly | No | 
 | InitialTemp | *Debug property:* the initial temperature of the sensor (if found). Used for comparison and to avoid overheating. | Readonly | No |
 | Found | *Debug property:* indicates if a temperature logger was found. | 0 (false) | No |
 | Connected | The connection status of the camera: 0 for not connected, 1 for connected, and 2 for started. | 0 | No |
